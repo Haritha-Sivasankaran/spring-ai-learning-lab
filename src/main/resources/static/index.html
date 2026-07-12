@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Spring AI Learning Lab</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --ink: #18202a;
+            --muted: #637083;
+            --line: #d8dee8;
+            --paper: #f7f8fb;
+            --panel: #ffffff;
+            --blue: #2357c6;
+            --green: #14785b;
+            --amber: #9a5b00;
+            --shadow: 0 10px 30px rgba(20, 31, 45, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--ink);
+            background: var(--paper);
+        }
+
+        main {
+            width: min(1180px, calc(100vw - 32px));
+            margin: 24px auto;
+            display: grid;
+            grid-template-columns: 330px 1fr;
+            gap: 18px;
+        }
+
+        aside,
+        section {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+        }
+
+        aside {
+            padding: 18px;
+            align-self: start;
+        }
+
+        section {
+            min-height: calc(100vh - 48px);
+            padding: 18px;
+        }
+
+        h1 {
+            font-size: 24px;
+            line-height: 1.2;
+            margin: 0 0 10px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        p {
+            line-height: 1.5;
+            color: var(--muted);
+        }
+
+        .status {
+            display: grid;
+            gap: 8px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfcfe;
+            font-size: 14px;
+        }
+
+        .status strong {
+            color: var(--ink);
+        }
+
+        .tabs {
+            display: grid;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        button {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            padding: 10px 12px;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        button:hover {
+            border-color: var(--blue);
+        }
+
+        button.active {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: #fff;
+        }
+
+        button.primary {
+            background: var(--green);
+            border-color: var(--green);
+            color: #fff;
+            min-width: 140px;
+        }
+
+        form {
+            display: grid;
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font: inherit;
+            color: var(--ink);
+            background: #fff;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .output {
+            margin-top: 18px;
+            border-top: 1px solid var(--line);
+            padding-top: 18px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+            background: #101722;
+            color: #eef4ff;
+            padding: 16px;
+            border-radius: 8px;
+            line-height: 1.5;
+            min-height: 180px;
+        }
+
+        .cards {
+            display: grid;
+            gap: 10px;
+            margin: 10px 0 14px;
+        }
+
+        .item {
+            border: 1px solid var(--line);
+            border-left: 4px solid var(--amber);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .item p {
+            margin: 6px 0 0;
+        }
+
+        @media (max-width: 840px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            section {
+                min-height: auto;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <aside>
+        <h1>Spring AI Learning Lab</h1>
+        <p>Run in mock mode first, then enable the OpenAI profile when you want real model calls.</p>
+        <div class="status" id="status">
+            <span><strong>Provider:</strong> loading</span>
+            <span><strong>Profiles:</strong> loading</span>
+        </div>
+        <div class="tabs">
+            <button class="active" data-tab="explain">Explain</button>
+            <button data-tab="quiz">Quiz</button>
+            <button data-tab="flashcards">Flashcards</button>
+        </div>
+    </aside>
+
+    <section>
+        <div id="explain-panel" class="panel">
+            <h2>Explain A Concept</h2>
+            <form id="explain-form">
+                <label>
+                    Question
+                    <textarea name="question">What is Spring AI ChatClient?</textarea>
+                </label>
+                <div class="grid">
+                    <label>
+                        Level
+                        <select name="level">
+                            <option>beginner</option>
+                            <option>intermediate</option>
+                            <option>advanced</option>
+                        </select>
+                    </label>
+                    <label>
+                        Goal
+                        <input name="goal" value="explain it in an interview">
+                    </label>
+                    <label>
+                        Endpoint
+                        <input value="/api/study/explain" disabled>
+                    </label>
+                </div>
+                <button class="primary" type="submit">Ask</button>
+            </form>
+        </div>
+
+        <div id="quiz-panel" class="panel" hidden>
+            <h2>Create A Quiz</h2>
+            <form id="quiz-form">
+                <div class="grid">
+                    <label>
+                        Topic
+                        <input name="topic" value="Spring AI structured output">
+                    </label>
+                    <label>
+                        Difficulty
+                        <select name="difficulty">
+                            <option>beginner</option>
+                            <option>intermediate</option>
+                            <option>advanced</option>
+                        </select>
+                    </label>
+                    <label>
+                        Questions
+                        <input name="numberOfQuestions" type="number" value="3" min="1" max="10">
+                    </label>
+                </div>
+                <button class="primary" type="submit">Generate</button>
+            </form>
+        </div>
+
+        <div id="flashcards-panel" class="panel" hidden>
+            <h2>Create Flashcards</h2>
+            <form id="flashcards-form">
+                <div class="grid">
+                    <label>
+                        Topic
+                        <input name="topic" value="Spring Boot profiles">
+                    </label>
+                    <label>
+                        Level
+                        <select name="level">
+                            <option>beginner</option>
+                            <option>intermediate</option>
+                            <option>advanced</option>
+                        </select>
+                    </label>
+                    <label>
+                        Cards
+                        <input name="count" type="number" value="5" min="1" max="12">
+                    </label>
+                </div>
+                <button class="primary" type="submit">Build Deck</button>
+            </form>
+        </div>
+
+        <div class="output">
+            <h2>Response</h2>
+            <div id="rendered-output" class="cards"></div>
+            <pre id="raw-output">Submit a request to see the API response.</pre>
+        </div>
+    </section>
+</main>
+
+<script>
+    const rawOutput = document.querySelector("#raw-output");
+    const renderedOutput = document.querySelector("#rendered-output");
+
+    document.querySelectorAll("[data-tab]").forEach((button) => {
+        button.addEventListener("click", () => {
+            document.querySelectorAll("[data-tab]").forEach((tab) => tab.classList.remove("active"));
+            document.querySelectorAll(".panel").forEach((panel) => panel.hidden = true);
+            button.classList.add("active");
+            document.querySelector(`#${button.dataset.tab}-panel`).hidden = false;
+        });
+    });
+
+    async function loadStatus() {
+        try {
+            const status = await fetchJson("/api/study/status");
+            document.querySelector("#status").innerHTML = `
+                <span><strong>Provider:</strong> ${escapeHtml(status.provider)}</span>
+                <span><strong>Profiles:</strong> ${escapeHtml(status.profiles.join(", "))}</span>
+            `;
+        } catch (error) {
+            document.querySelector("#status").textContent = error.message;
+        }
+    }
+
+    async function fetchJson(url, options = {}) {
+        const response = await fetch(url, options);
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : {};
+        if (!response.ok) {
+            throw new Error(data.message || `Request failed with ${response.status}`);
+        }
+        return data;
+    }
+
+    function formJson(form) {
+        const data = Object.fromEntries(new FormData(form).entries());
+        for (const key of ["numberOfQuestions", "count"]) {
+            if (data[key] !== undefined) {
+                data[key] = Number(data[key]);
+            }
+        }
+        return data;
+    }
+
+    function postForm(formId, endpoint, renderer) {
+        document.querySelector(formId).addEventListener("submit", async (event) => {
+            event.preventDefault();
+            rawOutput.textContent = "Loading...";
+            renderedOutput.innerHTML = "";
+            try {
+                const data = await fetchJson(endpoint, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(formJson(event.currentTarget))
+                });
+                rawOutput.textContent = JSON.stringify(data, null, 2);
+                renderer(data);
+            } catch (error) {
+                rawOutput.textContent = error.message;
+            }
+        });
+    }
+
+    function renderExplain(data) {
+        renderedOutput.innerHTML = `
+            <div class="item">
+                <strong>${escapeHtml(data.provider)}</strong>
+                <p>${escapeHtml(data.answer).replaceAll("\n", "<br>")}</p>
+            </div>
+        `;
+    }
+
+    function renderQuiz(data) {
+        renderedOutput.innerHTML = data.questions.map((question, index) => `
+            <div class="item">
+                <strong>${index + 1}. ${escapeHtml(question.question)}</strong>
+                <p>${question.options.map(escapeHtml).join(" | ")}</p>
+                <p><strong>Answer:</strong> ${escapeHtml(question.answer)}</p>
+                <p>${escapeHtml(question.explanation)}</p>
+            </div>
+        `).join("");
+    }
+
+    function renderFlashcards(data) {
+        renderedOutput.innerHTML = data.cards.map((card, index) => `
+            <div class="item">
+                <strong>${index + 1}. ${escapeHtml(card.front)}</strong>
+                <p>${escapeHtml(card.back)}</p>
+                <p><strong>Hint:</strong> ${escapeHtml(card.hint)}</p>
+            </div>
+        `).join("");
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    postForm("#explain-form", "/api/study/explain", renderExplain);
+    postForm("#quiz-form", "/api/study/quiz", renderQuiz);
+    postForm("#flashcards-form", "/api/study/flashcards", renderFlashcards);
+    loadStatus();
+</script>
+</body>
+</html>

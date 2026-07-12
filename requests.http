@@ -1,0 +1,32 @@
+### Status
+GET http://localhost:8080/api/study/status
+
+### Explain a concept
+POST http://localhost:8080/api/study/explain
+Content-Type: application/json
+
+{
+  "question": "What is Spring AI ChatClient?",
+  "level": "beginner",
+  "goal": "explain it in an interview"
+}
+
+### Generate a quiz
+POST http://localhost:8080/api/study/quiz
+Content-Type: application/json
+
+{
+  "topic": "Spring AI structured output",
+  "difficulty": "beginner",
+  "numberOfQuestions": 3
+}
+
+### Generate flashcards
+POST http://localhost:8080/api/study/flashcards
+Content-Type: application/json
+
+{
+  "topic": "Spring Boot profiles",
+  "level": "beginner",
+  "count": 5
+}

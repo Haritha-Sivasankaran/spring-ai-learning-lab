@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: spring-ai-learning-lab
+  ai:
+    model:
+      chat: none
+
+server:
+  port: ${PORT:8080}
