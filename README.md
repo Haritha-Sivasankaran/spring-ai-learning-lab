@@ -103,6 +103,19 @@ Invoke-RestMethod `
 5. Change one prompt and compare mock vs `openai` behavior.
 6. Add a new endpoint, for example `/api/study/lesson-plan`.
 
+## AI Coder & AutoHarness Integration
+
+This repository is optimized for autonomous AI coding agents like **Claude Code**. It pre-bundles distilled Spring AI development skills so that your agent doesn't hallucinate legacy configurations:
+
+- **Pre-Bundled Skills**: Located in `.claude/skills/spring_ai_patterns.md`. It outlines rules for ChatClient building, structured record deserialization, and profile usage.
+- **Tigerless Labs AutoHarness**: If you are using Claude Code locally, you can install the `autoharness` self-learning skill layer. It monitors your coding sessions, aggregates new skills, and prunes unused ones:
+  ```bash
+  # Inside Claude Code CLI:
+  /plugin marketplace add tigerless-labs/autoharness
+  /plugin install autoharness@autoharness
+  /reload-plugins
+  ```
+
 ## Official Docs Used
 
 - Spring Boot 4.1.0 documentation: https://docs.spring.io/spring-boot/index.html
