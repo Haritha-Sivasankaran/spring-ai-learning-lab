@@ -2165,6 +2165,34 @@ public class StudyBuddyService {
                                       </div>
                                   </div>
                               </div>
+
+                              <!-- Claude Code & AutoHarness Integration -->
+                              <div class="card">
+                                  <div class="card-header">
+                                      <h2>Claude Code &amp; AutoHarness Integration</h2>
+                                      <p>Distill your acquired Spring AI engineering patterns from this learning session into a standardized Claude Code Skill card compatible with Tigerless Labs' <code>autoharness</code> lifecycle engine.</p>
+                                  </div>
+                                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                      <div>
+                                          <p style="font-size: 13.5px; color: var(--muted); margin-bottom: 12px; line-height: 1.6;">
+                                              By exporting this skill file to your active coding workspace (placing it under <code>.claude/skills/spring_ai_patterns.md</code>), AI agents like Claude Code will read it and adhere strictly to builder patterns, prompt layouts, and Jackson Record serialization schemas you developed in this lab.
+                                          </p>
+                                          <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; font-size: 12px; margin-bottom: 16px; color: var(--accent); border: 1px dashed rgba(20, 184, 166, 0.25); line-height: 1.5;">
+                                              💡 <strong>Why use this?</strong> Avoids AI agent code drift, legacy constructors hallucinations, and ensures perfect structural model compliance.
+                                          </div>
+                                          <button class="btn btn-primary" onclick="generateAutoHarnessSkill()" style="width: 100%; height: 44px;">
+                                              Generate AutoHarness Skill Card
+                                          </button>
+                                      </div>
+                                      <div style="display:flex; flex-direction:column; gap:8px;">
+                                          <div style="display:flex; justify-content:space-between; align-items:center;">
+                                              <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight:700;">Skill Output Preview</span>
+                                              <button class="btn btn-secondary" onclick="copyAutoHarnessSkill()" style="font-size:11px; padding: 4px 10px;">Copy Skill Card</button>
+                                          </div>
+                                          <textarea id="autoharness-preview" readonly style="flex:1; min-height: 140px; background: rgba(0,0,0,0.4); border: 1px solid var(--panel-border); border-radius: 8px; font-family: var(--font-mono); font-size: 11px; padding: 12px; color: #a7f3d0; resize: none; outline:none; line-height:1.4;">Click generate to synthesize skill layer...</textarea>
+                                      </div>
+                                  </div>
+                              </div>
                           </div>
                       </div>
                   </div>
@@ -3501,6 +3529,83 @@ String answer = this.chatClient.prompt()
             document.getElementById('api-module-description').textContent = ref.description;
             document.getElementById('api-module-code').textContent = ref.code;
             document.getElementById('api-module-docs-link').href = ref.link;
+        };
+
+        window.generateAutoHarnessSkill = function() {
+            const user = currentUser || "Developer";
+            const skillTemplate = `# Skill: Spring AI Integration Patterns
+
+## Metadata
+- ID: spring-ai-core-patterns
+- Title: Spring AI ChatClient and Jackson Record Deserialization Rules
+- Version: 1.0.0
+- Harvested: ${new Date().toISOString().split('T')[0]}
+- Source: Spring AI Learning Lab
+- Author: ${user}
+- Scope: Project-wide Java backend LLM configurations
+
+## Context
+When working with AI integrations in Spring Boot, the agent must avoid using legacy constructors (e.g. ChatClient constructors) and instead construct instances via ChatClient.Builder. It must also map structured JSON outputs to Java Records.
+
+## Distilled Patterns & Rules
+
+### 1. Fluent ChatClient Builders
+Avoid legacy constructors. Always build ChatClient instances using ChatClient.Builder injected via constructor parameters:
+\`\`\`java
+@Service
+public class ChatService {
+    private final ChatClient chatClient;
+
+    public ChatService(ChatClient.Builder builder) {
+        this.chatClient = builder
+            .defaultSystem("Injected System Context")
+            .build();
+    }
+}
+\`\`\`
+
+### 2. Prompt Templating and Parameter Mapping
+Utilize PromptTemplates for mapping dynamic prompts. Bind keys to maps safely:
+\`\`\`java
+PromptTemplate template = new PromptTemplate("Explain {topic} in detail.");
+Prompt prompt = template.create(Map.of("topic", topic));
+String response = this.chatClient.prompt(prompt).call().content();
+\`\`\`
+
+### 3. Structured Model Outputs
+Map output JSON shapes directly to records using Jackson schema generators via .entity() calls:
+\`\`\`java
+public record StudyCard(String front, String back, String hint) {}
+
+public StudyCard generateCard(String topic) {
+    return this.chatClient.prompt()
+        .user("Create flashcard for: " + topic)
+        .call()
+        .entity(StudyCard.class);
+}
+\`\`\`
+
+### 4. Profile Management
+Always ensure the active profile is set to 'openai' for production integration, or 'default' / 'mock' for local offline testing.
+
+## Lifecycle Details
+- Graduation Status: Graduate
+- Usage Ledger: Generated on user request.
+- Autoharness ID: auto-spring-ai-study-buddy
+`;
+            const previewTextarea = document.getElementById("autoharness-preview");
+            previewTextarea.value = skillTemplate;
+        };
+
+        window.copyAutoHarnessSkill = function() {
+            const previewTextarea = document.getElementById("autoharness-preview");
+            if (previewTextarea.value === "Click generate to synthesize skill layer...") {
+                alert("Please click 'Generate AutoHarness Skill Card' first.");
+                return;
+            }
+            previewTextarea.select();
+            document.execCommand("copy");
+            alert("AutoHarness Skill Card copied to clipboard! Save this file as '.claude/skills/spring_ai_patterns.md' in your Spring projects.");
         };
 
         // SESSION HANDLING LOGIC
