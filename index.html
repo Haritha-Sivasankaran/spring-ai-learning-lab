@@ -1578,6 +1578,10 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                             Coding Lab
                         </button>
+                        <button class="nav-btn" data-tab="reference">
+                            <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3a2.5 2.5 0 0 1 2.5-2.5H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5z"/></svg>
+                            Reference Hub
+                        </button>
                     </nav>
                 </div>
 
@@ -2049,8 +2053,124 @@
                     </div>
                 </div>
 
-                <!-- 6. DEVELOPER SANDBOX PANEL -->
-                <div id="sandbox-panel" class="panel-tab">
+                <!-- 8. REFERENCE HUB PANEL -->
+                <div id="reference-panel" class="panel-tab">
+                    <div class="flashcard-layout">
+                        <!-- Left Navigation: API Modules -->
+                        <div>
+                            <div class="card" style="position:sticky; top:100px; padding: 20px;">
+                                <h3 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 16px; font-weight:800; font-family:var(--font-display);">Spring AI Core APIs</h3>
+                                <div style="display:flex; flex-direction:column; gap:8px;">
+                                    <button class="btn btn-secondary" style="justify-content:flex-start; font-size:13px; padding: 10px 16px; border-color:var(--primary); background:rgba(99, 102, 241, 0.05);" onclick="showApiReference('chat-client')" id="api-btn-chat-client">
+                                        ChatClient API
+                                    </button>
+                                    <button class="btn btn-secondary" style="justify-content:flex-start; font-size:13px; padding: 10px 16px;" onclick="showApiReference('prompt-template')" id="api-btn-prompt-template">
+                                        Prompt Templates
+                                    </button>
+                                    <button class="btn btn-secondary" style="justify-content:flex-start; font-size:13px; padding: 10px 16px;" onclick="showApiReference('vector-store')" id="api-btn-vector-store">
+                                        Vector Stores & RAG
+                                    </button>
+                                    <button class="btn btn-secondary" style="justify-content:flex-start; font-size:13px; padding: 10px 16px;" onclick="showApiReference('output-converter')" id="api-btn-output-converter">
+                                        Structured Output
+                                    </button>
+                                    <button class="btn btn-secondary" style="justify-content:flex-start; font-size:13px; padding: 10px 16px;" onclick="showApiReference('function-calling')" id="api-btn-function-calling">
+                                        Function Calling
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right API Details + Resource Directory -->
+                        <div style="display:flex; flex-direction:column; gap:24px;">
+                            <!-- API Detail Viewer Card -->
+                            <div class="card" id="api-detail-card">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+                                    <div>
+                                        <span class="roadmap-status-tag" id="api-module-tag" style="background:rgba(99,102,241,0.1); color:#a5b4fc; border-color:rgba(99,102,241,0.2);">Core API</span>
+                                        <h2 id="api-module-title" style="font-size:20px; font-family:var(--font-display); font-weight:800; margin-top:6px; color:white;">ChatClient API</h2>
+                                    </div>
+                                    <a id="api-module-docs-link" href="https://docs.spring.io/spring-ai/reference/api/chatclient.html" target="_blank" class="btn btn-secondary" style="font-size:12px; padding:8px 12px; gap:4px;">
+                                        View Reference Docs
+                                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+                                    </a>
+                                </div>
+                                <p id="api-module-description" style="font-size:14.5px; color:var(--muted); margin-bottom:16px; line-height:1.6;">
+                                    The ChatClient is the core interface for interacting with large language models. It provides a fluent builder API to formulate system prompts, user prompts, bind external tools, and handle model responses synchronously or asynchronously (via Project Reactor Flux streams).
+                                </p>
+                                <div class="sandbox-code-block" id="api-module-code" style="color: #6ee7b7; margin-bottom: 0; background: rgba(0,0,0,0.5); font-family: var(--font-mono); font-size:13px; line-height:1.5;">// Build and use ChatClient in a Spring @Service
+@Service
+public class StudyBuddyService {
+    private final ChatClient chatClient;
+
+    public StudyBuddyService(ChatClient.Builder builder) {
+        this.chatClient = builder
+            .defaultSystem("You are a helpful software tutor.")
+            .build();
+    }
+
+    public String askQuestion(String question) {
+        return this.chatClient.prompt()
+            .user(question)
+            .call()
+            .content(); // returns LLM response string
+    }
+}</div>
+                            </div>
+
+                            <!-- Curated Learning Directories Grid -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Global Learning Resource Directory</h2>
+                                    <p>Curated tutorials, guides, video series, and source code repositories compiled from across the web for Spring AI developers.</p>
+                                </div>
+
+                                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+                                    <!-- Official Sites -->
+                                    <div class="card" style="margin-bottom:0; background:rgba(255,255,255,0.01); border-color:var(--panel-border); padding: 20px;">
+                                        <h3 style="font-size:14px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; color: white;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#10b981;"></span>
+                                            Official Docs
+                                        </h3>
+                                        <ul style="list-style:none; padding-left:0; margin:0; display:flex; flex-direction:column; gap:10px; font-size:13px;">
+                                            <li><a href="https://spring.io/projects/spring-ai" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Spring AI Project Page &rarr;</a></li>
+                                            <li><a href="https://docs.spring.io/spring-ai/reference/" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Official Reference Docs &rarr;</a></li>
+                                            <li><a href="https://github.com/spring-projects/spring-ai" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">GitHub Repo & Awesome List &rarr;</a></li>
+                                        </ul>
+                                      </div>
+
+                                      <!-- Video Courses -->
+                                      <div class="card" style="margin-bottom:0; background:rgba(255,255,255,0.01); border-color:var(--panel-border); padding: 20px;">
+                                          <h3 style="font-size:14px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; color: white;">
+                                              <span style="width:6px; height:6px; border-radius:50%; background:#3b82f6;"></span>
+                                              Video Guides
+                                          </h3>
+                                          <ul style="list-style:none; padding-left:0; margin:0; display:flex; flex-direction:column; gap:10px; font-size:13px;">
+                                              <li><a href="https://www.youtube.com/watch?v=kU_Ua0C5-iA" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">SivaLabs Complete Guide &rarr;</a></li>
+                                              <li><a href="https://www.youtube.com/results?search_query=dan+vega+spring+ai" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Dan Vega Video Guides &rarr;</a></li>
+                                              <li><a href="https://www.coursera.org/" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Coursera GenAI Specialization &rarr;</a></li>
+                                          </ul>
+                                      </div>
+
+                                      <!-- Articles & Blogs -->
+                                      <div class="card" style="margin-bottom:0; background:rgba(255,255,255,0.01); border-color:var(--panel-border); padding: 20px;">
+                                          <h3 style="font-size:14px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; color: white;">
+                                              <span style="width:6px; height:6px; border-radius:50%; background:#d946ef;"></span>
+                                              Developer Blogs
+                                          </h3>
+                                          <ul style="list-style:none; padding-left:0; margin:0; display:flex; flex-direction:column; gap:10px; font-size:13px;">
+                                              <li><a href="https://www.baeldung.com/spring-ai" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Baeldung Intro Tutorial &rarr;</a></li>
+                                              <li><a href="https://hungrycoders.com/" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Hungry Coders Setup Guide &rarr;</a></li>
+                                              <li><a href="https://towardsai.net/" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Towards AI Learn Path &rarr;</a></li>
+                                          </ul>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- 6. DEVELOPER SANDBOX PANEL -->
+                  <div id="sandbox-panel" class="panel-tab">
                     <div class="card">
                         <div class="card-header">
                             <h2>Under the Hood - Spring AI Inspector</h2>
@@ -2483,6 +2603,7 @@ Rules:
                 quiz: { title: "Quiz Arena", sub: "Challenge yourself with structured multi-choice review sessions." },
                 flashcards: { title: "Flashcard Studio", sub: "Utilize 3D card decks to reinforce syntax and concepts." },
                 challenges: { title: "Coding Lab", sub: "Complete hands-on Java configuration exercises checked by compile tests." },
+                reference: { title: "Reference Hub", sub: "Access Spring AI API cheat sheets and developer courses." },
                 sandbox: { title: "Under the Hood", sub: "Explore underlying Java REST configurations and AI prompt layouts." }
             };
 
@@ -3254,6 +3375,133 @@ Rules:
                 .replaceAll("'", "\\'")
                 .replaceAll('"', '\\"');
         }
+
+        // API REFERENCE DATA DEFINITIONS
+        const API_REFERENCES = {
+            'chat-client': {
+                tag: 'Core API',
+                title: 'ChatClient API',
+                link: 'https://docs.spring.io/spring-ai/reference/api/chatclient.html',
+                description: 'The ChatClient is the core interface for interacting with large language models. It provides a fluent builder API to formulate system prompts, user prompts, bind external tools, and handle model responses synchronously or asynchronously (via Project Reactor Flux streams).',
+                code: `// Build and use ChatClient in a Spring @Service
+@Service
+public class StudyBuddyService {
+    private final ChatClient chatClient;
+
+    public StudyBuddyService(ChatClient.Builder builder) {
+        this.chatClient = builder
+            .defaultSystem("You are a helpful software tutor.")
+            .build();
+    }
+
+    public String askQuestion(String question) {
+        return this.chatClient.prompt()
+            .user(question)
+            .call()
+            .content(); // returns LLM response string
+    }
+}`
+            },
+            'prompt-template': {
+                tag: 'Input Abstractions',
+                title: 'Prompt Templates API',
+                link: 'https://docs.spring.io/spring-ai/reference/api/prompt.html',
+                description: 'PromptTemplates help manage dynamic system and user inputs. Rather than hand-crafting string concatenations, PromptTemplate allows you to declare parameters in curly brackets (e.g. {topic}) and map them safely using key-value builders.',
+                code: `// Construct dynamic prompts safely with PromptTemplate
+public String createPrompt(String topic, String level) {
+    PromptTemplate template = new PromptTemplate("""
+        Explain the concept of {topic}
+        specifically for a {level} learner.
+        """);
+    
+    Prompt prompt = template.create(Map.of(
+        "topic", topic,
+        "level", level
+    ));
+    
+    return this.chatClient.prompt(prompt)
+        .call()
+        .content();
+}`
+            },
+            'vector-store': {
+                tag: 'Retrieval Augmented Generation',
+                title: 'Vector Store & RAG API',
+                link: 'https://docs.spring.io/spring-ai/reference/api/vectordbs.html',
+                description: 'Spring AI integrates seamlessly with major vector databases (pgvector, Milvus, Neo4j, Pinecone, etc.). The VectorStore API enables reading document snippets, embedding them using an EmbeddingModel, and querying snippets via semantic similarity search to enrich prompts (RAG).',
+                code: `// Query documents semantically from a VectorStore
+@Autowired
+private VectorStore vectorStore;
+
+public List<Document> queryKnowledgeBase(String query) {
+    List<Document> results = this.vectorStore.similaritySearch(
+        SearchRequest.query(query)
+            .withTopK(3)
+            .withSimilarityThreshold(0.7)
+    );
+    return results;
+}`
+            },
+            'output-converter': {
+                tag: 'Structured Output',
+                title: 'Structured Output Converters',
+                link: 'https://docs.spring.io/spring-ai/reference/api/structured-output-converter.html',
+                description: 'StructuredOutputConverters parse model output directly into structured formats (like Java records or classes). By utilizing Jackson schema generators, Spring AI instructs the LLM on the exact JSON layout needed and deserializes the response automatically.',
+                code: `// Deserializing AI response directly to a Java Record
+public record ConceptReview(String topic, String explanation, int difficulty) {}
+
+public ConceptReview reviewConcept(String topic) {
+    return this.chatClient.prompt()
+        .user("Analyze: " + topic)
+        .call()
+        .entity(ConceptReview.class); // Spring AI maps JSON directly!
+}`
+            },
+            'function-calling': {
+                tag: 'Agent Tools',
+                title: 'Function Calling API',
+                link: 'https://docs.spring.io/spring-ai/reference/api/functions.html',
+                description: 'Function calling turns LLMs into active agents. You can register standard Java java.util.function.Function beans in the Spring ApplicationContext. The LLM can dynamically decide to execute these functions when it needs real-time context (like weather, active database rows, or local calculations).',
+                code: `// Declare a bean and bind it to ChatClient
+@Bean
+@Description("Get current inventory stock status for a book")
+public Function<BookRequest, BookStatus> bookInventoryService() {
+    return request -> new BookStatus(request.id(), 15);
+}
+
+// Bind function name to prompt call
+String answer = this.chatClient.prompt()
+    .user("Do we have book 482 in stock?")
+    .functions("bookInventoryService") // AI calls this method automatically!
+    .call()
+    .content();`
+            }
+        };
+
+        window.showApiReference = function(apiId) {
+            const buttons = ['chat-client', 'prompt-template', 'vector-store', 'output-converter', 'function-calling'];
+            buttons.forEach(id => {
+                const btn = document.getElementById(`api-btn-${id}`);
+                if (btn) {
+                    if (id === apiId) {
+                        btn.style.borderColor = 'var(--primary)';
+                        btn.style.background = 'rgba(99, 102, 241, 0.05)';
+                    } else {
+                        btn.style.borderColor = 'var(--panel-border)';
+                        btn.style.background = 'rgba(255, 255, 255, 0.03)';
+                    }
+                }
+            });
+
+            const ref = API_REFERENCES[apiId];
+            if (!ref) return;
+
+            document.getElementById('api-module-tag').textContent = ref.tag;
+            document.getElementById('api-module-title').textContent = ref.title;
+            document.getElementById('api-module-description').textContent = ref.description;
+            document.getElementById('api-module-code').textContent = ref.code;
+            document.getElementById('api-module-docs-link').href = ref.link;
+        };
 
         // SESSION HANDLING LOGIC
         function checkSession() {
