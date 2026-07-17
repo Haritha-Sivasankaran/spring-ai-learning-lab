@@ -1512,6 +1512,30 @@
 
     <div class="ambient-glow"></div>
 
+    <!-- LOGIN SCREEN OVERLAY -->
+    <div id="login-overlay" class="loading-overlay visible">
+        <div class="card" style="width: 100%; max-width: 420px; padding: 32px; background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(20px); border: 1px solid var(--panel-border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(20, 184, 166, 0.1)); width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; border: 1px solid rgba(99, 102, 241, 0.25);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="url(#logo-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 36px; height: 36px;">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <h2 style="font-family: var(--font-display); font-weight: 800; font-size: 24px; color: white; letter-spacing: -0.5px;">Spring AI Lab</h2>
+                <p style="font-size: 13.5px; color: var(--muted); margin-top: 6px;">Sign in to your learning workspace</p>
+            </div>
+            <form id="login-form" class="form-grid">
+                <div class="input-group">
+                    <label style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Username</label>
+                    <input type="text" id="login-username" placeholder="Enter study workspace name..." required style="height: 48px; font-size: 14px;">
+                </div>
+                <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 16px; height: 48px;">
+                    Access Workspace
+                </button>
+            </form>
+        </div>
+    </div>
+
     <div class="app-container">
         
         <!-- SIDEBAR -->
@@ -1591,6 +1615,24 @@
                     </div>
                 </div>
             </div>
+
+            <!-- USER SESSION MANAGER -->
+            <div class="config-card" style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255, 255, 255, 0.02); border-color: var(--panel-border);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: white; font-family: var(--font-display);" id="user-avatar">
+                        U
+                    </div>
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: white;" id="user-name-display">Guest</div>
+                        <div style="font-size: 10px; color: var(--muted);">Active Student</div>
+                    </div>
+                </div>
+                <button onclick="logoutUser()" style="background: none; border: none; color: var(--muted); cursor: pointer; display: flex; align-items: center; padding: 4px; border-radius: 4px; transition: var(--transition);" title="Log Out / Switch Account" onmouseover="this.style.color='white'" onmouseout="this.style.color='var(--muted)'">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                    </svg>
+                </button>
+            </div>
         </aside>
 
         <!-- MAIN VIEWPORT -->
@@ -1617,7 +1659,7 @@
                 <div id="dashboard-panel" class="panel-tab active">
                     <div class="welcome-banner">
                         <div class="welcome-text">
-                            <h2>Welcome back to the Learning Lab! 👋</h2>
+                            <h2 id="welcome-greeting">Welcome back to the Learning Lab! 👋</h2>
                             <p>This sandbox helps you learn Spring AI fundamentals. Work your way through the curriculum roadmap below, study flashcards, and practice structured quiz recall.</p>
                         </div>
                     </div>
@@ -2349,6 +2391,7 @@ Rules:
         let currentMode = 'demo'; 
         let serverActive = false;
         let activeProfile = 'default';
+        let currentUser = null;
         
         // Stats and Course progression stored in LocalStorage
         let appStats = {
@@ -2366,11 +2409,24 @@ Rules:
 
         // Load statistics
         function loadStats() {
-            const saved = localStorage.getItem("spring_ai_study_stats");
+            if (!currentUser) return;
+            const statsKey = `spring_ai_study_stats_${currentUser}`;
+            const saved = localStorage.getItem(statsKey);
+            appStats = {
+                explains: 0,
+                quizzes: 0,
+                flashcards: 0,
+                moduleProgress: {
+                    "module-1": { explain: false, quiz: false, flashcards: false },
+                    "module-2": { explain: false, quiz: false, flashcards: false },
+                    "module-3": { explain: false, quiz: false, flashcards: false },
+                    "module-4": { explain: false, quiz: false, flashcards: false },
+                    "module-5": { explain: false, quiz: false, flashcards: false }
+                }
+            };
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    // Merge properties to handle older schemas safely
                     appStats = { ...appStats, ...parsed };
                 } catch (e) {
                     console.error("Failed parsing stats, reset to default", e);
@@ -2380,7 +2436,9 @@ Rules:
         }
 
         function saveStats() {
-            localStorage.setItem("spring_ai_study_stats", JSON.stringify(appStats));
+            if (!currentUser) return;
+            const statsKey = `spring_ai_study_stats_${currentUser}`;
+            localStorage.setItem(statsKey, JSON.stringify(appStats));
             updateStatsUI();
         }
 
@@ -3197,11 +3255,47 @@ Rules:
                 .replaceAll('"', '\\"');
         }
 
+        // SESSION HANDLING LOGIC
+        function checkSession() {
+            const user = localStorage.getItem("spring_ai_current_user");
+            const overlay = document.getElementById("login-overlay");
+            if (user) {
+                currentUser = user;
+                overlay.style.display = "none";
+                overlay.classList.remove("visible");
+                document.getElementById("user-name-display").textContent = user;
+                document.getElementById("user-avatar").textContent = user.substring(0, 1).toUpperCase();
+                document.getElementById("welcome-greeting").textContent = `Welcome back to the Learning Lab, ${user}! 👋`;
+                
+                loadStats();
+                renderCurriculumRoadmaps();
+            } else {
+                currentUser = null;
+                overlay.style.display = "flex";
+                overlay.classList.add("visible");
+            }
+        }
+
+        document.getElementById("login-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const usernameInput = document.getElementById("login-username");
+            const username = usernameInput.value.trim();
+            if (username) {
+                localStorage.setItem("spring_ai_current_user", username);
+                usernameInput.value = "";
+                checkSession();
+            }
+        });
+
+        window.logoutUser = function() {
+            localStorage.removeItem("spring_ai_current_user");
+            checkSession();
+        };
+
         // INITIALIZE APP
-        loadStats();
         updateProviderVisibility(providerModeSelect.value);
         detectProviderMode();
-        renderCurriculumRoadmaps();
+        checkSession();
     </script>
 </body>
 </html>
