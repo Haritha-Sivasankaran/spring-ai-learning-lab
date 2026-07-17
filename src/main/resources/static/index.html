@@ -3,30 +3,33 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Spring AI Learning Lab - Interactive Study Hub</title>
+    <title>Spring AI Learning Lab - Study Buddy Hub</title>
     
     <!-- Modern Tech Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Markdown Parser (Marked) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
         :root {
-            --bg-color: #0b0c14;
-            --panel-bg: rgba(18, 20, 38, 0.7);
+            --bg-color: #06070a;
+            --panel-bg: rgba(13, 15, 27, 0.65);
             --panel-border: rgba(255, 255, 255, 0.08);
             --ink: #f3f4f6;
             --muted: #9ca3af;
             --line: rgba(255, 255, 255, 0.08);
             
-            /* Curated Neon Color Palette */
+            /* Modern Curated Color Palette */
             --primary: #6366f1; /* Indigo */
+            --primary-hover: #4f46e5;
             --primary-glow: rgba(99, 102, 241, 0.15);
+            
             --secondary: #14b8a6; /* Teal */
             --secondary-glow: rgba(20, 184, 166, 0.15);
+            
             --accent: #d946ef; /* Fuchsia */
             --accent-glow: rgba(217, 70, 239, 0.15);
             
@@ -35,10 +38,14 @@
             --error: #f43f5e;
             --error-glow: rgba(244, 63, 94, 0.15);
             --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.15);
             
-            --shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            --glass-blur: blur(16px);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            --glass-blur: blur(20px);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-display: 'Plus Jakarta Sans', sans-serif;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
         * {
@@ -48,52 +55,75 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+            font-family: var(--font-sans);
             color: var(--ink);
             background: var(--bg-color);
             background-image: 
                 radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.1) 0px, transparent 50%);
+                radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(217, 70, 239, 0.05) 0px, transparent 50%);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             overflow-x: hidden;
             line-height: 1.6;
         }
 
-        /* Ambient glowing circles */
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Ambient glowing background circles */
         .ambient-glow {
             position: fixed;
-            width: 400px;
-            height: 400px;
+            width: 500px;
+            height: 500px;
             border-radius: 50%;
             background: var(--primary);
-            filter: blur(120px);
-            opacity: 0.12;
+            filter: blur(140px);
+            opacity: 0.08;
             pointer-events: none;
             z-index: -1;
-            top: 20%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 30%;
+            left: 35%;
         }
 
-        header {
-            border-bottom: 1px solid var(--panel-border);
-            background: rgba(11, 12, 20, 0.8);
+        /* Layout Grid */
+        .app-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR NAVIGATION */
+        aside {
+            background: rgba(10, 11, 18, 0.85);
+            border-right: 1px solid var(--panel-border);
             backdrop-filter: var(--glass-blur);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            height: 100vh;
             position: sticky;
             top: 0;
-            z-index: 100;
-            padding: 16px 24px;
+            overflow-y: auto;
+            justify-content: space-between;
         }
 
-        .header-container {
-            max-width: 1300px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
+        .sidebar-header {
+            margin-bottom: 32px;
         }
 
         .logo {
@@ -102,6 +132,7 @@
             gap: 12px;
             font-weight: 800;
             font-size: 20px;
+            font-family: var(--font-display);
             letter-spacing: -0.5px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
@@ -116,81 +147,33 @@
             height: 28px;
         }
 
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 9999px;
-            font-size: 13px;
+        .logo-subtitle {
+            font-size: 11px;
+            color: var(--muted);
             font-weight: 600;
-            border: 1px solid var(--panel-border);
-            background: rgba(255, 255, 255, 0.03);
-            transition: var(--transition);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--muted);
-            box-shadow: 0 0 8px var(--muted);
-        }
-
-        .status-badge.connected .status-dot {
-            background: var(--success);
-            box-shadow: 0 0 10px var(--success);
-        }
-
-        .status-badge.openai .status-dot {
-            background: var(--secondary);
-            box-shadow: 0 0 10px var(--secondary);
-        }
-
-        .status-badge.demo .status-dot {
-            background: var(--warning);
-            box-shadow: 0 0 10px var(--warning);
-        }
-
-        main {
-            max-width: 1300px;
-            width: calc(100vw - 48px);
-            margin: 32px auto;
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 24px;
-            flex-grow: 1;
-        }
-
-        aside {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            align-self: start;
-        }
-
-        .sidebar-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--panel-border);
-            box-shadow: var(--shadow);
-            border-radius: 16px;
-            padding: 20px;
-            backdrop-filter: var(--glass-blur);
-        }
-
-        .sidebar-card h3 {
-            font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            margin-top: 4px;
+            padding-left: 40px;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
             color: var(--muted);
             margin-bottom: 12px;
             font-weight: 700;
         }
 
-        .nav-tabs {
+        .nav-menu {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .nav-btn {
@@ -201,8 +184,8 @@
             border-radius: 10px;
             background: transparent;
             color: var(--muted);
-            padding: 12px 16px;
-            font-size: 15px;
+            padding: 11px 14px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             text-align: left;
@@ -210,8 +193,8 @@
         }
 
         .nav-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             stroke: currentColor;
             fill: none;
             stroke-width: 2;
@@ -226,26 +209,83 @@
 
         .nav-btn.active {
             background: var(--primary-glow);
-            border-color: rgba(99, 102, 241, 0.3);
-            color: var(--ink);
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.25);
+            color: #818cf8;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.08);
         }
 
         .nav-btn.active svg {
             stroke: #818cf8;
         }
 
-        /* Settings Card & Provider Picker */
-        .provider-select {
-            margin-bottom: 12px;
+        /* Config Card */
+        .config-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: auto;
+        }
+
+        .config-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin-bottom: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .config-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            box-shadow: 0 0 8px var(--muted);
+            display: inline-block;
+        }
+
+        .config-card.connected .config-dot {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        .config-card.openai .config-dot {
+            background: var(--secondary);
+            box-shadow: 0 0 10px var(--secondary);
+        }
+
+        .config-card.demo .config-dot {
+            background: var(--warning);
+            box-shadow: 0 0 10px var(--warning);
+        }
+
+        .select-custom {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--ink);
+            font-size: 13px;
+            width: 100%;
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .select-custom:focus {
+            border-color: var(--primary);
         }
 
         .api-key-input-container {
             display: none;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             margin-top: 12px;
-            animation: fadeIn 0.3s ease;
+            animation: slideDown 0.25s ease;
         }
 
         .api-key-wrapper {
@@ -255,19 +295,25 @@
         }
 
         .api-key-wrapper input {
-            padding-right: 40px;
+            padding-right: 32px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--ink);
+            width: 100%;
+            outline: none;
         }
 
         .toggle-password {
             position: absolute;
-            right: 12px;
+            right: 8px;
             background: none;
             border: none;
             color: var(--muted);
             cursor: pointer;
             display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .toggle-password:hover {
@@ -275,57 +321,149 @@
         }
 
         .toggle-password svg {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             stroke: currentColor;
             fill: none;
             stroke-width: 2;
         }
 
-        /* Main Workspace Content Area */
-        .workspace {
+        /* MAIN CONTENT AREA */
+        main {
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            height: 100vh;
+            overflow-y: auto;
+            position: relative;
         }
 
-        .content-panel {
+        /* Top Header */
+        header {
+            padding: 24px 40px;
+            border-bottom: 1px solid var(--panel-border);
+            background: rgba(6, 7, 10, 0.5);
+            backdrop-filter: var(--glass-blur);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-title-area h1 {
+            font-size: 20px;
+            font-family: var(--font-display);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .header-title-area p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .server-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid var(--panel-border);
+            background: rgba(255, 255, 255, 0.02);
+            transition: var(--transition);
+        }
+
+        .server-status-badge.online {
+            border-color: rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.05);
+            color: #a7f3d0;
+        }
+
+        .server-status-badge.offline {
+            border-color: rgba(244, 63, 94, 0.2);
+            background: rgba(244, 63, 94, 0.05);
+            color: #fecdd3;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            display: inline-block;
+        }
+
+        .server-status-badge.online .pulse-dot {
+            animation: pulse-green 2s infinite;
+        }
+
+        /* Workspace Panels */
+        .workspace-content {
+            padding: 32px 40px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            flex-grow: 1;
+        }
+
+        .panel-tab {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .panel-tab.active {
+            display: block;
+        }
+
+        /* CARDS AND BLOCKS */
+        .card {
             background: var(--panel-bg);
             border: 1px solid var(--panel-border);
-            box-shadow: var(--shadow);
             border-radius: 16px;
             padding: 28px;
+            box-shadow: var(--shadow);
             backdrop-filter: var(--glass-blur);
-            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .panel-header {
             margin-bottom: 24px;
         }
 
-        .panel-header h2 {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            margin-bottom: 6px;
-            background: linear-gradient(135deg, #fff 60%, var(--muted));
+        .card-header {
+            margin-bottom: 20px;
+        }
+
+        .card-header h2 {
+            font-size: 20px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 70%, var(--muted));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .panel-header p {
+        .card-header p {
             font-size: 14px;
             color: var(--muted);
+            margin-top: 4px;
         }
 
-        form {
+        /* FORMS */
+        .form-grid {
             display: grid;
             gap: 20px;
         }
 
         .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
         }
 
@@ -336,21 +474,21 @@
         }
 
         .input-group label {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 700;
             color: var(--muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
-        input, textarea, select {
+        input[type="text"], input[type="number"], textarea, select {
             width: 100%;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--panel-border);
             border-radius: 10px;
             padding: 12px 16px;
-            font-family: inherit;
-            font-size: 15px;
+            font-family: var(--font-sans);
+            font-size: 14px;
             color: var(--ink);
             outline: none;
             transition: var(--transition);
@@ -359,142 +497,392 @@
         input:focus, textarea:focus, select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px var(--primary-glow);
-            background: rgba(0, 0, 0, 0.35);
+            background: rgba(0, 0, 0, 0.4);
         }
 
         textarea {
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
         }
 
-        button.btn-primary {
-            align-self: start;
+        /* BUTTONS */
+        .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            background: linear-gradient(135deg, var(--primary), #4f46e5);
-            border: none;
+            gap: 8px;
             border-radius: 10px;
-            padding: 14px 28px;
-            color: white;
-            font-size: 15px;
+            padding: 12px 24px;
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
             transition: var(--transition);
+            font-family: var(--font-display);
+            border: 1px solid transparent;
         }
 
-        button.btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
             filter: brightness(1.1);
         }
 
-        button.btn-primary:active {
+        .btn-primary:active {
             transform: translateY(0);
         }
 
-        button.btn-primary:disabled {
-            opacity: 0.6;
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: var(--panel-border);
+            color: var(--ink);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--secondary), #0ea5e9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.25);
+        }
+
+        .btn-accent:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.35);
+            filter: brightness(1.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
+            transform: none !important;
+            box-shadow: none !important;
         }
 
-        /* Results / Output Area */
-        .output-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--panel-border);
-            box-shadow: var(--shadow);
+        /* 1. DASHBOARD VIEW STYLES */
+        .welcome-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(20, 184, 166, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.2);
             border-radius: 16px;
-            padding: 28px;
-            backdrop-filter: var(--glass-blur);
-            display: none;
-            flex-direction: column;
-            gap: 20px;
-            margin-top: 4px;
-        }
-
-        .output-card.visible {
-            display: flex;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .output-header {
+            padding: 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--line);
-            padding-bottom: 16px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .output-title {
-            font-size: 18px;
-            font-weight: 700;
+        .welcome-text h2 {
+            font-size: 24px;
+            font-family: var(--font-display);
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text p {
+            color: var(--muted);
+            font-size: 14px;
+            max-width: 600px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 24px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 20px;
+            position: relative;
+            backdrop-filter: var(--glass-blur);
         }
 
-        .output-badge {
-            font-size: 11px;
-            padding: 4px 8px;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--panel-border);
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-glow);
+            color: var(--primary);
+        }
+
+        .stat-card:nth-child(2) .stat-icon {
+            background: var(--secondary-glow);
+            color: var(--secondary);
+        }
+
+        .stat-card:nth-child(3) .stat-icon {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        .stat-info h3 {
+            font-size: 28px;
+            font-family: var(--font-display);
+            font-weight: 800;
+        }
+
+        .stat-info p {
+            font-size: 12px;
+            color: var(--muted);
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        /* 2. LEARNING PATH / ROADMAP ROADMAP */
+        .roadmap-container {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .roadmap-line {
+            position: absolute;
+            left: 28px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary), var(--accent), rgba(255,255,255,0.05));
+            z-index: 1;
+        }
+
+        .roadmap-node {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .roadmap-dot-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .roadmap-dot {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: #0d0f1b;
+            border: 3px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 16px;
+            color: var(--muted);
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+        }
+
+        .roadmap-node.completed .roadmap-dot {
+            border-color: var(--success);
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.08);
+        }
+
+        .roadmap-node.active .roadmap-dot {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .roadmap-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 24px;
+            flex-grow: 1;
+            box-shadow: var(--shadow);
+            backdrop-filter: var(--glass-blur);
+            transition: var(--transition);
+        }
+
+        .roadmap-node.active .roadmap-content {
+            border-color: rgba(99, 102, 241, 0.3);
+            background: rgba(18, 20, 38, 0.65);
+        }
+
+        .roadmap-node:hover .roadmap-content {
+            transform: translateX(4px);
+        }
+
+        .roadmap-node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .roadmap-node-title {
+            font-size: 18px;
+            font-family: var(--font-display);
+            font-weight: 700;
+        }
+
+        .roadmap-status-tag {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--muted);
+            border: 1px solid var(--panel-border);
+        }
+
+        .roadmap-node.completed .roadmap-status-tag {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .roadmap-node.active .roadmap-status-tag {
+            background: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+            border-color: rgba(99, 102, 241, 0.2);
+        }
+
+        .roadmap-node-desc {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 18px;
+        }
+
+        .roadmap-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-top: 1px solid var(--line);
+            padding-top: 16px;
+        }
+
+        .roadmap-action-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--panel-border);
+            color: var(--ink);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .roadmap-action-btn:hover {
+            background: var(--primary-glow);
+            border-color: rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+        }
+
+        /* 3. TUTOR VIEW STYLES */
+        .tutor-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+        }
+
+        .tutor-answer-card {
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .tutor-placeholder {
+            text-align: center;
+            padding: 40px;
             color: var(--muted);
         }
 
-        /* Markdown Rendering Styles */
+        .tutor-placeholder svg {
+            width: 48px;
+            height: 48px;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Markdown tutor output styling */
         .markdown-body {
             color: var(--ink);
-            font-size: 15px;
+            font-size: 14.5px;
             line-height: 1.7;
         }
 
         .markdown-body h1, .markdown-body h2, .markdown-body h3 {
             margin-top: 24px;
             margin-bottom: 12px;
+            font-family: var(--font-display);
             font-weight: 700;
+            color: white;
         }
 
-        .markdown-body h1 { font-size: 1.4em; }
+        .markdown-body h1 { font-size: 1.4em; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
         .markdown-body h2 { font-size: 1.2em; }
         .markdown-body h3 { font-size: 1.1em; }
 
         .markdown-body p {
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .markdown-body code {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             background: rgba(255, 255, 255, 0.06);
             padding: 2px 6px;
             border-radius: 4px;
             font-size: 0.9em;
-            color: #ec4899;
+            color: #f43f5e;
         }
 
         .markdown-body pre {
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--panel-border);
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 16px;
             overflow-x: auto;
-            margin-bottom: 16px;
+            margin: 16px 0;
+            position: relative;
         }
 
         .markdown-body pre code {
             background: none;
             padding: 0;
             color: #a5b4fc;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
 
         .markdown-body ul, .markdown-body ol {
-            margin-bottom: 16px;
-            padding-left: 24px;
+            margin-bottom: 14px;
+            padding-left: 20px;
         }
 
         .markdown-body li {
@@ -506,17 +894,20 @@
             padding-left: 16px;
             color: var(--muted);
             margin: 16px 0;
+            background: rgba(99, 102, 241, 0.02);
+            padding-top: 8px;
+            padding-bottom: 8px;
+            border-radius: 0 8px 8px 0;
         }
 
-        /* Suggested Steps List */
-        .suggested-steps {
-            margin-top: 16px;
+        .suggested-next-steps {
+            margin-top: 24px;
             border-top: 1px solid var(--line);
-            padding-top: 16px;
+            padding-top: 20px;
         }
 
-        .suggested-steps h4 {
-            font-size: 13px;
+        .suggested-next-steps h4 {
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--muted);
@@ -524,13 +915,13 @@
             font-weight: 700;
         }
 
-        .step-tags {
+        .suggested-buttons {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
 
-        .step-btn {
+        .suggested-btn {
             background: rgba(99, 102, 241, 0.05);
             border: 1px solid rgba(99, 102, 241, 0.15);
             color: #a5b4fc;
@@ -542,25 +933,35 @@
             transition: var(--transition);
         }
 
-        .step-btn:hover {
+        .suggested-btn:hover {
             background: var(--primary);
             border-color: var(--primary);
             color: white;
             transform: translateY(-1px);
         }
 
-        /* Interactive Quiz Styles */
-        .quiz-container {
+        /* 4. QUIZ ARENA STYLES */
+        .quiz-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+        }
+
+        .quiz-card {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            min-height: 420px;
+        }
+
+        .quiz-progress-wrapper {
+            margin-bottom: 16px;
         }
 
         .quiz-progress-bar {
             width: 100%;
             height: 6px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 999px;
+            border-radius: 99px;
             overflow: hidden;
         }
 
@@ -574,36 +975,38 @@
         .quiz-hud {
             display: flex;
             justify-content: space-between;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-top: 8px;
         }
 
         .quiz-question-box {
             font-size: 18px;
+            font-family: var(--font-display);
             font-weight: 700;
-            color: var(--ink);
-            margin-top: 10px;
+            color: white;
+            margin: 20px 0;
+            line-height: 1.4;
         }
 
         .quiz-options {
             display: grid;
             grid-template-columns: 1fr;
             gap: 12px;
-            margin-top: 8px;
         }
 
         .option-btn {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--panel-border);
             border-radius: 10px;
             padding: 16px;
             color: var(--ink);
             text-align: left;
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 14.5px;
+            font-weight: 500;
             cursor: pointer;
             transition: var(--transition);
             display: flex;
@@ -612,59 +1015,55 @@
         }
 
         .option-btn:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.05);
             border-color: var(--primary);
             transform: translateX(4px);
         }
 
         .option-btn:disabled {
             cursor: not-allowed;
-            opacity: 0.8;
         }
 
         .option-btn.correct {
             background: var(--success-glow);
             border-color: var(--success);
             color: #a7f3d0;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.1);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08);
+            font-weight: 600;
         }
 
         .option-btn.incorrect {
             background: var(--error-glow);
             border-color: var(--error);
             color: #fecdd3;
-            box-shadow: 0 4px 20px rgba(244, 63, 94, 0.1);
+            box-shadow: 0 4px 15px rgba(244, 63, 94, 0.08);
+            font-weight: 600;
         }
 
-        .option-feedback-icon {
+        .feedback-icon {
             display: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
         }
 
-        .option-btn.correct .option-feedback-icon.correct-icon,
-        .option-btn.incorrect .option-feedback-icon.incorrect-icon {
+        .option-btn.correct .feedback-icon.correct-icon,
+        .option-btn.incorrect .feedback-icon.incorrect-icon {
             display: block;
         }
 
         .quiz-explanation {
-            display: none;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.015);
             border-left: 4px solid var(--secondary);
             padding: 16px;
-            border-radius: 0 8px 8px 0;
-            font-size: 14px;
+            border-radius: 0 10px 10px 0;
+            font-size: 13.5px;
             color: var(--muted);
-            margin-top: 10px;
+            margin-top: 20px;
             animation: slideDown 0.3s ease;
         }
 
-        .quiz-explanation.visible {
-            display: block;
-        }
-
         .quiz-explanation strong {
-            color: var(--ink);
+            color: white;
             display: block;
             margin-bottom: 4px;
         }
@@ -672,7 +1071,7 @@
         .quiz-actions {
             display: flex;
             justify-content: flex-end;
-            margin-top: 8px;
+            margin-top: 20px;
         }
 
         /* Quiz Summary Screen */
@@ -681,58 +1080,82 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 20px;
-            padding: 20px 0;
+            padding: 40px 0;
+            animation: fadeIn 0.4s ease;
         }
 
-        .circular-chart {
-            width: 120px;
-            height: 120px;
+        .score-radial {
+            width: 140px;
+            height: 140px;
+            position: relative;
         }
 
-        .circle-bg {
-            fill: none;
-            stroke: rgba(255, 255, 255, 0.05);
-            stroke-width: 3.8;
-        }
-
-        .circle {
-            fill: none;
-            stroke-width: 3.8;
-            stroke-linecap: round;
-            stroke: url(#summary-grad);
-            transition: stroke-dasharray 1s ease;
-        }
-
-        .circular-chart text {
-            fill: var(--ink);
-            font-family: inherit;
-            font-size: 8px;
-            font-weight: 800;
-            text-anchor: middle;
-        }
-
-        .quiz-score-text {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #fff, var(--muted));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .quiz-feedback-msg {
-            font-size: 15px;
-            color: var(--muted);
-            max-width: 300px;
-        }
-
-        /* Flashcard 3D CSS */
-        .flashcard-wrapper {
-            perspective: 1000px;
+        .score-radial svg {
             width: 100%;
-            max-width: 520px;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .score-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.04);
+            stroke-width: 3.5;
+        }
+
+        .score-progress {
+            fill: none;
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            stroke: url(#score-grad);
+            transition: stroke-dasharray 1s ease-in-out;
+        }
+
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 28px;
+            color: white;
+        }
+
+        .summary-title {
+            font-size: 22px;
+            font-family: var(--font-display);
+            font-weight: 800;
+        }
+
+        .summary-feedback {
+            color: var(--muted);
+            max-width: 340px;
+            font-size: 14px;
+        }
+
+        /* 5. FLASHCARD VIEW STYLES */
+        .flashcard-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+        }
+
+        .flashcard-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 420px;
+        }
+
+        .flashcard-wrapper {
+            perspective: 1200px;
+            width: 100%;
+            max-width: 540px;
             height: 280px;
-            margin: 20px auto;
+            margin: auto 0;
         }
 
         .flashcard {
@@ -754,11 +1177,11 @@
             height: 100%;
             backface-visibility: hidden;
             border-radius: 20px;
-            padding: 30px;
+            padding: 32px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
             border: 1px solid var(--panel-border);
         }
 
@@ -775,7 +1198,7 @@
 
         .card-tag {
             align-self: flex-start;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -801,10 +1224,11 @@
             align-items: center;
             justify-content: center;
             flex-grow: 1;
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 17px;
+            font-weight: 600;
             padding: 10px 0;
             line-height: 1.5;
+            font-family: var(--font-display);
         }
 
         .card-hint-text {
@@ -826,19 +1250,22 @@
             color: var(--muted);
             text-align: center;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .flashcard-controls {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            max-width: 520px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 540px;
             gap: 16px;
+            margin-top: 20px;
         }
 
-        .flashcard-nav-btn {
-            background: rgba(255, 255, 255, 0.03);
+        .circle-nav-btn {
+            background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--panel-border);
             color: var(--ink);
             width: 44px;
@@ -851,127 +1278,162 @@
             transition: var(--transition);
         }
 
-        .flashcard-nav-btn:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.08);
+        .circle-nav-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.05);
             border-color: var(--primary);
             color: white;
         }
 
-        .flashcard-nav-btn:disabled {
-            opacity: 0.3;
+        .circle-nav-btn:disabled {
+            opacity: 0.2;
             cursor: not-allowed;
         }
 
-        .flashcard-nav-btn svg {
-            width: 20px;
-            height: 20px;
+        .circle-nav-btn svg {
+            width: 18px;
+            height: 18px;
             stroke: currentColor;
             fill: none;
             stroke-width: 2.5;
         }
 
-        .flashcard-progress {
+        .flashcard-progress-label {
             font-size: 13px;
             font-weight: 700;
             color: var(--muted);
         }
 
-        .flashcard-action-btn {
+        /* 6. DEV SANDBOX (UNDER THE HOOD) */
+        .sandbox-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .sandbox-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--line);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .sandbox-tab-btn {
             background: none;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            color: var(--warning);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--muted);
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
         }
 
-        .flashcard-action-btn:hover {
-            background: rgba(245, 158, 11, 0.1);
-            border-color: var(--warning);
+        .sandbox-tab-btn:hover {
+            color: white;
         }
 
-        /* JSON Raw Toggle */
-        .raw-json-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: var(--muted);
-            cursor: pointer;
-            user-select: none;
-            margin-top: 10px;
-            border-top: 1px solid var(--line);
-            padding-top: 12px;
+        .sandbox-tab-btn.active {
+            color: var(--primary);
+            border-color: var(--primary);
         }
 
-        .raw-json-toggle input {
-            width: auto;
-        }
-
-        .raw-json-box {
-            display: none;
-            margin-top: 10px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .raw-json-box.visible {
-            display: block;
-        }
-
-        pre.raw-json {
-            background: rgba(0, 0, 0, 0.5);
+        .sandbox-code-block {
+            background: rgba(0, 0, 0, 0.45);
             border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            padding: 18px;
+            font-family: var(--font-mono);
+            font-size: 12.5px;
             color: #a7f3d0;
-            padding: 16px;
-            border-radius: 8px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
             overflow-x: auto;
-            max-height: 250px;
+            max-height: 400px;
+            white-space: pre-wrap;
+            position: relative;
         }
 
-        /* Loading Spinner */
-        .loading-container {
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--panel-border);
+            color: var(--muted);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .sandbox-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .sandbox-meta span strong {
+            color: white;
+        }
+
+        /* LOADING INDICATOR Overlay */
+        .loading-overlay {
             display: none;
-            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(6, 7, 10, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
-            gap: 16px;
-            padding: 40px 0;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.25s ease;
         }
 
-        .loading-container.visible {
+        .loading-overlay.visible {
             display: flex;
         }
 
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid rgba(255, 255, 255, 0.05);
+        .spinner-ring {
+            width: 56px;
+            height: 56px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
             border-top-color: var(--primary);
+            border-bottom-color: var(--secondary);
             border-radius: 50%;
-            animation: spin 1s infinite linear;
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
         }
 
-        .loading-text {
-            font-size: 14px;
+        .loading-message {
+            font-size: 15px;
             font-weight: 600;
-            color: var(--muted);
+            color: var(--ink);
             letter-spacing: 0.5px;
+            text-align: center;
         }
 
         footer {
-            margin-top: auto;
+            padding: 24px 40px;
             border-top: 1px solid var(--panel-border);
-            padding: 24px;
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--muted);
-            background: rgba(11, 12, 20, 0.5);
+            background: rgba(6, 7, 10, 0.4);
+            margin-top: auto;
         }
 
         footer a {
@@ -984,7 +1446,7 @@
             text-decoration: underline;
         }
 
-        /* Keyframes */
+        /* KEYFRAMES */
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -996,36 +1458,53 @@
         }
 
         @keyframes slideUp {
-            from { transform: translateY(12px); opacity: 0; }
+            from { transform: translateY(16px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
 
         @keyframes slideDown {
-            from { transform: translateY(-8px); opacity: 0; }
+            from { transform: translateY(-12px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Responsive */
-        @media (max-width: 900px) {
-            main {
+        @keyframes pulse-green {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 10px rgba(16, 185, 129, 0.6); }
+            100% { transform: scale(0.9); opacity: 0.8; }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 990px) {
+            .app-container {
                 grid-template-columns: 1fr;
             }
             aside {
-                align-self: stretch;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--panel-border);
+            }
+            main {
+                height: auto;
+            }
+            .tutor-layout, .quiz-layout, .flashcard-layout {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
 
+    <!-- SVG Gradients -->
     <svg style="position: absolute; width: 0; height: 0;" width="0" height="0">
         <defs>
             <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#6366f1" />
                 <stop offset="100%" stop-color="#14b8a6" />
             </linearGradient>
-            <linearGradient id="summary-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="score-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#6366f1" />
+                <stop offset="50%" stop-color="#d946ef" />
                 <stop offset="100%" stop-color="#14b8a6" />
             </linearGradient>
         </defs>
@@ -1033,56 +1512,75 @@
 
     <div class="ambient-glow"></div>
 
-    <header>
-        <div class="header-container">
-            <a href="#" class="logo">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-                SPRING AI STUDY LAB
-            </a>
-            <div class="status-badge connected" id="connection-status">
-                <div class="status-dot"></div>
-                <span id="connection-text">Detecting mode...</span>
-            </div>
-        </div>
-    </header>
-
-    <main>
+    <div class="app-container">
+        
+        <!-- SIDEBAR -->
         <aside>
-            <div class="sidebar-card">
-                <h3>Navigation</h3>
-                <div class="nav-tabs">
-                    <button class="nav-btn active" data-tab="explain">
-                        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        Explain Concept
-                    </button>
-                    <button class="nav-btn" data-tab="quiz">
-                        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                        Practice Quiz
-                    </button>
-                    <button class="nav-btn" data-tab="flashcards">
-                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
-                        Study Flashcards
-                    </button>
+            <div class="sidebar-top">
+                <div class="sidebar-header">
+                    <a href="#" class="logo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        SPRING AI LAB
+                    </a>
+                    <div class="logo-subtitle">Study Buddy</div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Workspace</div>
+                    <nav class="nav-menu">
+                        <button class="nav-btn active" data-tab="dashboard">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                            Dashboard
+                        </button>
+                        <button class="nav-btn" data-tab="roadmap">
+                            <svg viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                            Study Path
+                        </button>
+                        <button class="nav-btn" data-tab="tutor">
+                            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            Concept Tutor
+                        </button>
+                        <button class="nav-btn" data-tab="quiz">
+                            <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            Quiz Arena
+                        </button>
+                        <button class="nav-btn" data-tab="flashcards">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+                            Flashcards
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Developer</div>
+                    <nav class="nav-menu">
+                        <button class="nav-btn" data-tab="sandbox">
+                            <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                            Under the Hood
+                        </button>
+                    </nav>
                 </div>
             </div>
 
-            <div class="sidebar-card">
-                <h3>Configuration</h3>
-                <div class="provider-select">
-                    <label style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; display: block;">Provider Mode</label>
-                    <select id="provider-mode" style="background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.05); font-size: 14px;">
-                        <option value="auto">Auto (Java Server / Demo)</option>
-                        <option value="server">Java Backend Local</option>
-                        <option value="openai">Client-side OpenAI</option>
-                        <option value="demo">Demo Mode (Client Mock)</option>
-                    </select>
+            <!-- Provider Configuration Inside Sidebar Bottom -->
+            <div class="config-card demo" id="sidebar-config-card">
+                <div class="config-title">
+                    <span>Provider Mode</span>
+                    <div class="config-dot" id="config-dot"></div>
                 </div>
+                <select id="provider-mode" class="select-custom">
+                    <option value="auto">Auto (Detect Java)</option>
+                    <option value="server">Java Backend Local</option>
+                    <option value="openai">Client OpenAI API</option>
+                    <option value="demo">Demo Mock Mode</option>
+                </select>
+                
                 <div class="api-key-input-container" id="api-key-container">
-                    <label style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase;">OpenAI API Key</label>
+                    <label style="font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-top:6px; display:block;">OpenAI API Key</label>
                     <div class="api-key-wrapper">
-                        <input type="password" id="openai-api-key" placeholder="sk-proj-..." style="background: rgba(0, 0, 0, 0.4); font-size: 14px; padding-right: 36px;">
+                        <input type="password" id="openai-api-key" placeholder="sk-proj-...">
                         <button type="button" class="toggle-password" id="toggle-key-visibility">
                             <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
@@ -1091,166 +1589,720 @@
             </div>
         </aside>
 
-        <div class="workspace">
-            <!-- Explain Tab -->
-            <div id="explain-panel" class="content-panel panel-tab">
-                <div class="panel-header">
-                    <h2>Explain A Concept</h2>
-                    <p>Have the AI break down complex concepts, tailor explanations, and recommend next steps.</p>
+        <!-- MAIN VIEWPORT -->
+        <main>
+            
+            <!-- HEADER -->
+            <header>
+                <div class="header-title-area">
+                    <h1 id="view-title">Dashboard</h1>
+                    <p id="view-subtitle">Monitor study progression and access core curriculum tracks.</p>
                 </div>
-                <form id="explain-form">
-                    <div class="input-group">
-                        <label>Concept / Question</label>
-                        <textarea name="question" placeholder="E.g., What is Spring AI ChatClient, or how does Dependency Injection work?">What is Spring AI ChatClient?</textarea>
+                <div class="header-right">
+                    <div class="server-status-badge offline" id="server-status">
+                        <div class="pulse-dot"></div>
+                        <span id="server-status-text">Server Offline</span>
                     </div>
-                    <div class="form-row">
-                        <div class="input-group">
-                            <label>Target Level</label>
-                            <select name="level">
-                                <option value="beginner">Beginner</option>
-                                <option value="intermediate">Intermediate</option>
-                                <option value="advanced">Advanced</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Learning Goal</label>
-                            <input name="goal" value="explain it in an interview" placeholder="E.g., prepare for quiz, explain to a child...">
-                        </div>
-                    </div>
-                    <button class="btn-primary" type="submit">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        Ask Tutor
-                    </button>
-                </form>
-            </div>
-
-            <!-- Quiz Tab -->
-            <div id="quiz-panel" class="content-panel panel-tab" style="display:none;">
-                <div class="panel-header">
-                    <h2>Practice Quiz</h2>
-                    <p>Generate interactive multiple-choice questions to assess your knowledge on a specific topic.</p>
                 </div>
-                <form id="quiz-form">
-                    <div class="input-group">
-                        <label>Topic</label>
-                        <input name="topic" value="Spring AI structured output" placeholder="E.g., Spring Profiles, RestControllers...">
-                    </div>
-                    <div class="form-row">
-                        <div class="input-group">
-                            <label>Difficulty</label>
-                            <select name="difficulty">
-                                <option value="beginner">Beginner</option>
-                                <option value="intermediate">Intermediate</option>
-                                <option value="advanced">Advanced</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Number of Questions</label>
-                            <input name="numberOfQuestions" type="number" value="3" min="1" max="10">
-                        </div>
-                    </div>
-                    <button class="btn-primary" type="submit">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                        Generate Quiz
-                    </button>
-                </form>
-            </div>
+            </header>
 
-            <!-- Flashcards Tab -->
-            <div id="flashcards-panel" class="content-panel panel-tab" style="display:none;">
-                <div class="panel-header">
-                    <h2>Study Flashcards</h2>
-                    <p>Build custom decks with hint functionality and interactive 3D card flipping.</p>
-                </div>
-                <form id="flashcards-form">
-                    <div class="input-group">
-                        <label>Topic</label>
-                        <input name="topic" value="Spring Boot profiles" placeholder="E.g., Spring Boot Annotations, Maven dependencies...">
-                    </div>
-                    <div class="form-row">
-                        <div class="input-group">
-                            <label>Target Level</label>
-                            <select name="level">
-                                <option value="beginner">Beginner</option>
-                                <option value="intermediate">Intermediate</option>
-                                <option value="advanced">Advanced</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Card Count</label>
-                            <input name="count" type="number" value="5" min="1" max="12">
-                        </div>
-                    </div>
-                    <button class="btn-primary" type="submit">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
-                        Build Deck
-                    </button>
-                </form>
-            </div>
-
-            <!-- Loading Indicator -->
-            <div class="loading-container" id="loading">
-                <div class="spinner"></div>
-                <span class="loading-text" id="loading-text">Consulting the AI Engine...</span>
-            </div>
-
-            <!-- Output Container -->
-            <div class="output-card" id="output-card">
-                <div class="output-header">
-                    <div class="output-title">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                        Study Response
-                    </div>
-                    <span class="output-badge" id="output-source-badge">Source: Local Server</span>
-                </div>
+            <!-- WORKSPACE CONTENT -->
+            <div class="workspace-content">
                 
-                <!-- Dynamic panel contents will load here -->
-                <div id="response-content"></div>
+                <!-- 1. DASHBOARD PANEL -->
+                <div id="dashboard-panel" class="panel-tab active">
+                    <div class="welcome-banner">
+                        <div class="welcome-text">
+                            <h2>Welcome back to the Learning Lab! 👋</h2>
+                            <p>This sandbox helps you learn Spring AI fundamentals. Work your way through the curriculum roadmap below, study flashcards, and practice structured quiz recall.</p>
+                        </div>
+                    </div>
 
-                <!-- Raw JSON Accordion -->
-                <div class="raw-json-toggle" id="json-toggle">
-                    <input type="checkbox" id="json-toggle-checkbox">
-                    <label for="json-toggle-checkbox" style="cursor: pointer;">Show Raw API JSON Payload</label>
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="stat-tutor-sessions">0</h3>
+                                <p>Tutor Explains</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="stat-quizzes-taken">0</h3>
+                                <p>Quizzes Passed</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="stat-cards-studied">0</h3>
+                                <p>Cards Mastered</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Curriculum Overview</h2>
+                            <p>Follow this curated track to learn how Spring Boot integrates with LLMs step-by-step.</p>
+                        </div>
+                        <div class="roadmap-container" id="dashboard-roadmap-summary">
+                            <!-- Dynamic list of timeline modules rendered here -->
+                        </div>
+                    </div>
                 </div>
-                <div class="raw-json-box" id="json-box">
-                    <pre class="raw-json" id="raw-json-output">JSON output goes here...</pre>
+
+                <!-- 2. STUDY PATH / ROADMAP PANEL -->
+                <div id="roadmap-panel" class="panel-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Learning Pathway</h2>
+                            <p>Interact with the roadmap nodes to unlock concepts, test yourself with auto-generated quizzes, and review memory flashcards.</p>
+                        </div>
+                        <div class="roadmap-container">
+                            <div class="roadmap-line"></div>
+                            <div id="roadmap-nodes-container">
+                                <!-- Rendered dynamically by script -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- 3. CONCEPT TUTOR PANEL -->
+                <div id="tutor-panel" class="panel-tab">
+                    <div class="tutor-layout">
+                        <!-- Controls -->
+                        <div>
+                            <div class="card" style="position: sticky; top: 100px;">
+                                <div class="card-header">
+                                    <h2>Tutor Setup</h2>
+                                    <p>Ask a custom concept or select a path module.</p>
+                                </div>
+                                <form id="explain-form" class="form-grid">
+                                    <div class="input-group">
+                                        <label>Concept / Question</label>
+                                        <textarea name="question" placeholder="E.g., What is Spring AI ChatClient?">What is Spring AI ChatClient?</textarea>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="input-group">
+                                            <label>Target Level</label>
+                                            <select name="level">
+                                                <option value="beginner">Beginner</option>
+                                                <option value="intermediate" selected>Intermediate</option>
+                                                <option value="advanced">Advanced</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Learning Goal</label>
+                                        <input name="goal" type="text" value="explain it in an interview" placeholder="E.g. coding example, exam prep">
+                                    </div>
+                                    <button class="btn btn-primary" type="submit">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                        Consult Tutor
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Response -->
+                        <div class="card tutor-answer-card">
+                            <div id="tutor-placeholder" class="tutor-placeholder">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                                <h3>Ready to Teach</h3>
+                                <p>Submit the form or click a module topic on the study path to see the AI's tailored explanation.</p>
+                            </div>
+                            <div id="tutor-response-container" style="display:none;">
+                                <div class="markdown-body" id="tutor-markdown-content"></div>
+                                <div class="suggested-next-steps" id="tutor-next-steps" style="display:none;">
+                                    <h4>Suggested Next Steps</h4>
+                                    <div class="suggested-buttons" id="tutor-next-buttons"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. QUIZ ARENA PANEL -->
+                <div id="quiz-panel" class="panel-tab">
+                    <div class="quiz-layout">
+                        <!-- Setup -->
+                        <div>
+                            <div class="card" style="position: sticky; top: 100px;">
+                                <div class="card-header">
+                                    <h2>Configure Quiz</h2>
+                                    <p>AI will generate structured JSON questions.</p>
+                                </div>
+                                <form id="quiz-form" class="form-grid">
+                                    <div class="input-group">
+                                        <label>Topic</label>
+                                        <input name="topic" type="text" value="Spring AI structured output" placeholder="E.g. Spring Profiles...">
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="input-group">
+                                            <label>Difficulty</label>
+                                            <select name="difficulty">
+                                                <option value="beginner">Beginner</option>
+                                                <option value="intermediate" selected>Intermediate</option>
+                                                <option value="advanced">Advanced</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Questions</label>
+                                            <input name="numberOfQuestions" type="number" value="3" min="1" max="10">
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" type="submit">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                        Build Quiz
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Quiz Body -->
+                        <div class="card quiz-card">
+                            <div id="quiz-placeholder" class="tutor-placeholder">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                <h3>Quiz Arena</h3>
+                                <p>Submit the configuration to compile a dynamic multiple choice practice challenge.</p>
+                            </div>
+                            <div id="quiz-active-arena" style="display:none; width: 100%;">
+                                <div class="quiz-progress-wrapper">
+                                    <div class="quiz-progress-bar">
+                                        <div class="quiz-progress-fill" id="quiz-progress-bar-fill"></div>
+                                    </div>
+                                    <div class="quiz-hud">
+                                        <span id="quiz-hud-index">Question 1 of 3</span>
+                                        <span id="quiz-hud-score">Score: 0/3</span>
+                                    </div>
+                                </div>
+                                <div class="quiz-question-box" id="quiz-question-text">
+                                    Loading question...
+                                </div>
+                                <div class="quiz-options" id="quiz-options-container">
+                                    <!-- Dynamic options -->
+                                </div>
+                                <div class="quiz-explanation" id="quiz-explanation-box" style="display:none;">
+                                    <strong>Explanation</strong>
+                                    <span id="quiz-explanation-text">...</span>
+                                </div>
+                                <div class="quiz-actions" id="quiz-actions-container" style="display:none;">
+                                    <button class="btn btn-accent" id="quiz-next-btn" onclick="nextQuizStep()">
+                                        Next Question
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="quiz-summary-arena" style="display:none; width: 100%;">
+                                <div class="quiz-summary">
+                                    <div class="score-radial">
+                                        <svg viewBox="0 0 36 36">
+                                            <path class="score-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                            <path class="score-progress" id="quiz-summary-radial" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        </svg>
+                                        <div class="score-text" id="quiz-summary-score-text">0%</div>
+                                    </div>
+                                    <div class="summary-title" id="quiz-summary-title">Quiz Completed!</div>
+                                    <div class="summary-feedback" id="quiz-summary-feedback">You answered 0 out of 0 questions correctly.</div>
+                                    <button class="btn btn-primary" onclick="restartQuiz()">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                                        Retake Quiz
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. FLASHCARDS PANEL -->
+                <div id="flashcards-panel" class="panel-tab">
+                    <div class="flashcard-layout">
+                        <!-- Setup -->
+                        <div>
+                            <div class="card" style="position: sticky; top: 100px;">
+                                <div class="card-header">
+                                    <h2>Configure Deck</h2>
+                                    <p>Specify card counts for structured recall.</p>
+                                </div>
+                                <form id="flashcards-form" class="form-grid">
+                                    <div class="input-group">
+                                        <label>Topic</label>
+                                        <input name="topic" type="text" value="Spring Boot profiles" placeholder="E.g. Spring Boot Annotations...">
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="input-group">
+                                            <label>Target Level</label>
+                                            <select name="level">
+                                                <option value="beginner">Beginner</option>
+                                                <option value="intermediate" selected>Intermediate</option>
+                                                <option value="advanced">Advanced</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Card Count</label>
+                                            <input name="count" type="number" value="5" min="1" max="12">
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" type="submit">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+                                        Build Deck
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card flashcard-card">
+                            <div id="flashcard-placeholder" class="tutor-placeholder" style="width: 100%;">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <h3>Flashcard Deck</h3>
+                                <p>Assemble a fresh custom study deck with interactive 3D flipping cards.</p>
+                            </div>
+                            <div id="flashcard-active-arena" style="display:none; width: 100%; flex-direction:column; align-items:center;">
+                                <div class="flashcard-wrapper">
+                                    <div class="flashcard" id="flashcard-element" onclick="flipFlashcard()">
+                                        <!-- Front -->
+                                        <div class="card-face card-front">
+                                            <span class="card-tag">Prompt / Question</span>
+                                            <div class="card-body" id="card-front-text">Question front text</div>
+                                            <div class="card-hint-text" id="card-hint-box">Hint: CLue</div>
+                                            <div class="card-footer-tip">Click card to Flip / Show Answer</div>
+                                        </div>
+                                        
+                                        <!-- Back -->
+                                        <div class="card-face card-back">
+                                            <span class="card-tag">Answer</span>
+                                            <div class="card-body" id="card-back-text">Answer explanation</div>
+                                            <div class="card-footer-tip">Click card to Flip back</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flashcard-controls">
+                                    <button class="circle-nav-btn" onclick="prevFlashcard()" id="card-prev-btn" title="Previous Card">
+                                        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                                    </button>
+                                    
+                                    <div style="display:flex; gap:10px;">
+                                        <button class="btn btn-secondary" onclick="revealFlashcardHint(event)" id="card-hint-btn">
+                                            Reveal Hint
+                                        </button>
+                                        <button class="btn btn-accent" onclick="masterFlashcard()" id="card-master-btn">
+                                            Got It!
+                                        </button>
+                                    </div>
+                                    
+                                    <span class="flashcard-progress-label" id="card-progress-label">
+                                        Card 1 of 5
+                                    </span>
+                                    
+                                    <button class="circle-nav-btn" onclick="nextFlashcard()" id="card-next-btn" title="Next Card">
+                                        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. DEVELOPER SANDBOX PANEL -->
+                <div id="sandbox-panel" class="panel-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Under the Hood - Spring AI Inspector</h2>
+                            <p>Inspect the raw request payloads, responses, Java implementation snippets, and the prompts running inside Spring Boot for the last action you performed.</p>
+                        </div>
+                        <div class="sandbox-grid">
+                            <div class="sandbox-meta">
+                                <span>API Endpoint: <strong id="sandbox-endpoint">None</strong></span>
+                                <span>Backend Service: <strong id="sandbox-service">Inactive</strong></span>
+                                <span>Spring Profile: <strong id="sandbox-profile">None</strong></span>
+                            </div>
+
+                            <div class="sandbox-tabs">
+                                <button class="sandbox-tab-btn active" data-stab="java">Java Backend Implementation</button>
+                                <button class="sandbox-tab-btn" data-stab="prompts">Spring AI Prompts</button>
+                                <button class="sandbox-tab-btn" data-stab="payloads">REST HTTP Payloads</button>
+                            </div>
+
+                            <!-- Java -->
+                            <div id="stab-java" class="sandbox-subtab">
+                                <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">The following snippet shows the actual Java code mapping the prompt in <code>SpringAiStudyClient.java</code>:</p>
+                                <div class="sandbox-code-block" id="sandbox-java-code">
+                                    <button class="copy-btn" onclick="copyToClipboard('sandbox-java-code')">Copy</button>
+                                    <span>No actions performed yet. Interact with the Tutor, Quiz, or Flashcards to inspect code.</span>
+                                </div>
+                            </div>
+
+                            <!-- Prompts -->
+                            <div id="stab-prompts" class="sandbox-subtab" style="display:none;">
+                                <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">The system and user templates sent to the ChatClient. Placeholders represent parameter mappings:</p>
+                                <div class="sandbox-code-block" id="sandbox-prompts-code">
+                                    <button class="copy-btn" onclick="copyToClipboard('sandbox-prompts-code')">Copy</button>
+                                    <span>No prompts to display yet.</span>
+                                </div>
+                            </div>
+
+                            <!-- Payloads -->
+                            <div id="stab-payloads" class="sandbox-subtab" style="display:none;">
+                                <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">The raw JSON sent and received by the REST Controller endpoint:</p>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                                    <div>
+                                        <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:6px; display:block;">HTTP Post Request Body</span>
+                                        <div class="sandbox-code-block" id="sandbox-request-json" style="max-height: 300px;">
+                                            <span>{}</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:6px; display:block;">HTTP Response Body JSON</span>
+                                        <div class="sandbox-code-block" id="sandbox-response-json" style="max-height: 300px;">
+                                            <span>{}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-        </div>
-    </main>
 
-    <footer>
-        Spring AI Learning Lab. Hosted locally or statically on <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
-    </footer>
+            <!-- FOOTER -->
+            <footer>
+                Spring AI Learning Lab &bull; Design by Antigravity &bull; Connects with <a href="https://spring.io/projects/spring-ai" target="_blank">Spring AI API</a>.
+            </footer>
+        </main>
+    </div>
 
-    <!-- Frontend logic & client side fallback -->
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner-ring"></div>
+        <div class="loading-message" id="loading-message">Consulting the Spring AI Engine...</div>
+    </div>
+
+    <!-- SCRIPTS AND LOGIC -->
     <script>
+        // Topic curriculum modules definition
+        const CURRICULUM = [
+            {
+                id: "module-1",
+                num: 1,
+                title: "Spring Boot & REST Controllers",
+                description: "Understand how Spring Controllers handle study requests, bind payloads, and exchange clean JSON schemas.",
+                question: "How does a Spring Boot REST controller work, and how does it map request JSON to Java records?",
+                topic: "Spring Boot REST controllers",
+                level: "beginner",
+                goal: "explain it for a java developer",
+                difficulty: "beginner",
+                count: 5
+            },
+            {
+                id: "module-2",
+                num: 2,
+                title: "Spring AI ChatClient & Builders",
+                description: "Explore the core ChatClient interface, builder setups, and standardizing default system prompts.",
+                question: "What is Spring AI ChatClient, and how do we configure default system prompts using the Builder pattern?",
+                topic: "Spring AI ChatClient",
+                level: "beginner",
+                goal: "explain it for a beginner",
+                difficulty: "beginner",
+                count: 5
+            },
+            {
+                id: "module-3",
+                num: 3,
+                title: "Prompt Templates & Parameter Binding",
+                description: "Master prompt parameterization using .param() placeholders to inject dynamic user values.",
+                question: "How do prompt templates and parameter injection with .param() work in Spring AI?",
+                topic: "Spring AI prompt parameters",
+                level: "intermediate",
+                goal: "write clear dynamic prompts",
+                difficulty: "intermediate",
+                count: 5
+            },
+            {
+                id: "module-4",
+                num: 4,
+                title: "Structured Outputs & Entity Mapping",
+                description: "Request structured JSON output from LLMs and let Spring AI auto-map them to strongly-typed Java Records.",
+                question: "How does Spring AI map model JSON responses to Java records using .entity(MyRecord.class)?",
+                topic: "Spring AI structured outputs",
+                level: "intermediate",
+                goal: "explain mapping records",
+                difficulty: "intermediate",
+                count: 5
+            },
+            {
+                id: "module-5",
+                num: 5,
+                title: "Profiles, Mocking & Keys",
+                description: "Configure profiles in application.yml to switch between mock offline clients and active OpenAI setups.",
+                question: "How do Spring profiles switch between mock and real AI providers, and how is application.yml configured?",
+                topic: "Spring Boot profiles and properties",
+                level: "advanced",
+                goal: "learn local vs production setups",
+                difficulty: "advanced",
+                count: 5
+            }
+        ];
+
+        // Java Code Snippets for Sandbox
+        const JAVA_SNIPPETS = {
+            explain: `// In SpringAiStudyClient.java
+@Override
+public ExplainResponse explain(ExplainRequest request) {
+    String answer = this.chatClient.prompt()
+            .user(user -> user.text("""
+                    Student level: {level}
+                    Learning goal: {goal}
+
+                    Question:
+                    {question}
+
+                    Explain the answer in this format:
+                    - Plain-English idea
+                    - A small Java or Spring example when useful
+                    - Common mistake to avoid
+                    - Three recap bullets
+                    - One practice task
+                    """)
+                    .param("level", request.level())
+                    .param("goal", request.goal())
+                    .param("question", request.question()))
+            .call()
+            .content();
+
+    return new ExplainResponse(PROVIDER, answer, List.of(...));
+}`,
+            quiz: `// In SpringAiStudyClient.java
+@Override
+public QuizResponse quiz(QuizRequest request) {
+    int count = clamp(request.numberOfQuestions(), 3, 1, 10);
+    QuizResponse response = this.chatClient.prompt()
+            .user(user -> user.text("""
+                    Create a learning quiz about {topic}.
+                    Difficulty: {difficulty}
+                    Number of questions: {count}
+
+                    Rules:
+                    - Return exactly {count} questions.
+                    - Each question must have exactly four options.
+                    - The answer must exactly match one option.
+                    - Keep explanations short and useful.
+                    """)
+                    .param("topic", request.topic())
+                    .param("difficulty", request.difficulty())
+                    .param("count", count))
+            .call()
+            .entity(QuizResponse.class); // <-- Auto-maps JSON schema to Java Record!
+
+    return response;
+}`,
+            flashcards: `// In SpringAiStudyClient.java
+@Override
+public FlashcardDeckResponse flashcards(FlashcardRequest request) {
+    int count = clamp(request.count(), 5, 1, 12);
+    FlashcardDeckResponse response = this.chatClient.prompt()
+            .user(user -> user.text("""
+                    Create flashcards for the topic: {topic}
+                    Student level: {level}
+                    Count: {count}
+
+                    Rules:
+                    - Return exactly {count} flashcards.
+                    - Front should ask one focused question.
+                    - Back should answer in two or three sentences.
+                    - Hint should be short and not reveal the full answer.
+                    """)
+                    .param("topic", request.topic())
+                    .param("level", request.level())
+                    .param("count", count))
+            .call()
+            .entity(FlashcardDeckResponse.class); // <-- Map JSON array to Java Record
+
+    return response;
+}`
+        };
+
+        // Spring AI Prompts Templates for Sandbox
+        const PROMPT_TEMPLATES = {
+            explain: `System Prompt:
+----------------------------------------
+You are StudyBuddy, a patient AI tutor for software engineering students.
+Prefer concise explanations, practical examples, and active recall.
+Do not invent citations. If the student asks about a version-sensitive topic,
+tell them to verify against the official documentation.
+
+User Prompt Template:
+----------------------------------------
+Student level: {level}
+Learning goal: {goal}
+
+Question:
+{question}
+
+Explain the answer in this format:
+- Plain-English idea
+- A small Java or Spring example when useful
+- Common mistake to avoid
+- Three recap bullets
+- One practice task`,
+            quiz: `System Prompt:
+----------------------------------------
+(Standard StudyBuddy prompt)
+
+User Prompt Template:
+----------------------------------------
+Create a learning quiz about {topic}.
+Difficulty: {difficulty}
+Number of questions: {count}
+
+Rules:
+- Return exactly {count} questions.
+- Each question must have exactly four options.
+- The answer must exactly match one option.
+- Keep explanations short and useful.`,
+            flashcards: `System Prompt:
+----------------------------------------
+(Standard StudyBuddy prompt)
+
+User Prompt Template:
+----------------------------------------
+Create flashcards for the topic: {topic}
+Student level: {level}
+Count: {count}
+
+Rules:
+- Return exactly {count} flashcards.
+- Front should ask one focused question.
+- Back should answer in two or three sentences.
+- Hint should be short and not reveal the full answer.`
+        };
+
         // DOM Selectors
         const navBtns = document.querySelectorAll(".nav-btn");
         const panelTabs = document.querySelectorAll(".panel-tab");
-        const connectionStatus = document.getElementById("connection-status");
-        const connectionText = document.getElementById("connection-text");
+        const viewTitle = document.getElementById("view-title");
+        const viewSubtitle = document.getElementById("view-subtitle");
+        
+        const serverStatusBadge = document.getElementById("server-status");
+        const serverStatusText = document.getElementById("server-status-text");
+        
         const providerModeSelect = document.getElementById("provider-mode");
+        const sidebarConfigCard = document.getElementById("sidebar-config-card");
         const apiKeyContainer = document.getElementById("api-key-container");
         const openAiApiKeyInput = document.getElementById("openai-api-key");
         const toggleKeyVisibilityBtn = document.getElementById("toggle-key-visibility");
         
-        const loadingContainer = document.getElementById("loading");
-        const loadingTextSpan = document.getElementById("loading-text");
-        const outputCard = document.getElementById("output-card");
-        const outputSourceBadge = document.getElementById("output-source-badge");
-        const responseContent = document.getElementById("response-content");
+        const loadingOverlay = document.getElementById("loading-overlay");
+        const loadingMessage = document.getElementById("loading-message");
         
-        const jsonToggleCheckbox = document.getElementById("json-toggle-checkbox");
-        const jsonBox = document.getElementById("json-box");
-        const rawJsonOutput = document.getElementById("raw-json-output");
+        // Sandbox DOM elements
+        const sandboxEndpoint = document.getElementById("sandbox-endpoint");
+        const sandboxService = document.getElementById("sandbox-service");
+        const sandboxProfile = document.getElementById("sandbox-profile");
+        const sandboxJavaCode = document.getElementById("sandbox-java-code");
+        const sandboxPromptsCode = document.getElementById("sandbox-prompts-code");
+        const sandboxRequestJson = document.getElementById("sandbox-request-json");
+        const sandboxResponseJson = document.getElementById("sandbox-response-json");
+        const sandboxTabBtns = document.querySelectorAll(".sandbox-tab-btn");
+        const sandboxSubtabs = document.querySelectorAll(".sandbox-subtab");
 
+        // Tutor DOM
+        const tutorPlaceholder = document.getElementById("tutor-placeholder");
+        const tutorResponseContainer = document.getElementById("tutor-response-container");
+        const tutorMarkdownContent = document.getElementById("tutor-markdown-content");
+        const tutorNextSteps = document.getElementById("tutor-next-steps");
+        const tutorNextButtons = document.getElementById("tutor-next-buttons");
+        
+        // Quiz DOM
+        const quizPlaceholder = document.getElementById("quiz-placeholder");
+        const quizActiveArena = document.getElementById("quiz-active-arena");
+        const quizSummaryArena = document.getElementById("quiz-summary-arena");
+        const quizProgressBarFill = document.getElementById("quiz-progress-bar-fill");
+        const quizHudIndex = document.getElementById("quiz-hud-index");
+        const quizHudScore = document.getElementById("quiz-hud-score");
+        const quizQuestionText = document.getElementById("quiz-question-text");
+        const quizOptionsContainer = document.getElementById("quiz-options-container");
+        const quizExplanationBox = document.getElementById("quiz-explanation-box");
+        const quizExplanationText = document.getElementById("quiz-explanation-text");
+        const quizActionsContainer = document.getElementById("quiz-actions-container");
+        const quizSummaryRadial = document.getElementById("quiz-summary-radial");
+        const quizSummaryScoreText = document.getElementById("quiz-summary-score-text");
+        const quizSummaryTitle = document.getElementById("quiz-summary-title");
+        const quizSummaryFeedback = document.getElementById("quiz-summary-feedback");
+        
+        // Flashcard DOM
+        const flashcardPlaceholder = document.getElementById("flashcard-placeholder");
+        const flashcardActiveArena = document.getElementById("flashcard-active-arena");
+        const flashcardElement = document.getElementById("flashcard-element");
+        const cardFrontText = document.getElementById("card-front-text");
+        const cardBackText = document.getElementById("card-back-text");
+        const cardHintBox = document.getElementById("card-hint-box");
+        const cardProgressLabel = document.getElementById("card-progress-label");
+        const cardPrevBtn = document.getElementById("card-prev-btn");
+        const cardNextBtn = document.getElementById("card-next-btn");
+        
         // Application State
-        let currentMode = 'demo'; // 'server', 'openai', 'demo'
+        let currentMode = 'demo'; 
         let serverActive = false;
-        let activeTab = 'explain';
+        let activeProfile = 'default';
+        
+        // Stats and Course progression stored in LocalStorage
+        let appStats = {
+            explains: 0,
+            quizzes: 0,
+            flashcards: 0,
+            moduleProgress: {
+                "module-1": { explain: false, quiz: false, flashcards: false },
+                "module-2": { explain: false, quiz: false, flashcards: false },
+                "module-3": { explain: false, quiz: false, flashcards: false },
+                "module-4": { explain: false, quiz: false, flashcards: false },
+                "module-5": { explain: false, quiz: false, flashcards: false }
+            }
+        };
 
-        // Load credentials from localStorage
+        // Load statistics
+        function loadStats() {
+            const saved = localStorage.getItem("spring_ai_study_stats");
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    // Merge properties to handle older schemas safely
+                    appStats = { ...appStats, ...parsed };
+                } catch (e) {
+                    console.error("Failed parsing stats, reset to default", e);
+                }
+            }
+            updateStatsUI();
+        }
+
+        function saveStats() {
+            localStorage.setItem("spring_ai_study_stats", JSON.stringify(appStats));
+            updateStatsUI();
+        }
+
+        function updateStatsUI() {
+            document.getElementById("stat-tutor-sessions").textContent = appStats.explains;
+            document.getElementById("stat-quizzes-taken").textContent = appStats.quizzes;
+            document.getElementById("stat-cards-studied").textContent = appStats.flashcards;
+        }
+
+        // Initialize credentials
         if (localStorage.getItem("openai_api_key")) {
             openAiApiKeyInput.value = localStorage.getItem("openai_api_key");
         }
@@ -1258,21 +2310,46 @@
             providerModeSelect.value = localStorage.getItem("study_provider_mode");
         }
 
-        // Event Listeners
+        // TAB SWITCHING
         navBtns.forEach(btn => {
             btn.addEventListener("click", () => {
-                navBtns.forEach(b => b.classList.remove("active"));
-                panelTabs.forEach(p => p.style.display = "none");
-                
-                btn.classList.add("active");
-                activeTab = btn.dataset.tab;
-                document.getElementById(`${activeTab}-panel`).style.display = "block";
-                
-                // Hide output card when switching tabs to avoid confusion
-                outputCard.classList.remove("visible");
+                const tab = btn.dataset.tab;
+                switchTab(tab);
             });
         });
 
+        function switchTab(tabId) {
+            navBtns.forEach(b => {
+                if (b.dataset.tab === tabId) b.classList.add("active");
+                else b.classList.remove("active");
+            });
+            
+            panelTabs.forEach(p => {
+                if (p.id === `${tabId}-panel`) p.classList.add("active");
+                else p.classList.remove("active");
+            });
+
+            // Adjust header title
+            const headers = {
+                dashboard: { title: "Dashboard", sub: "Monitor study progression and access core curriculum tracks." },
+                roadmap: { title: "Study Path", sub: "Interactive learning timeline of Spring Boot and Spring AI capabilities." },
+                tutor: { title: "Concept Tutor", sub: "Chat with StudyBuddy AI to clarify software engineering terms." },
+                quiz: { title: "Quiz Arena", sub: "Challenge yourself with structured multi-choice review sessions." },
+                flashcards: { title: "Flashcard Studio", sub: "Utilize 3D card decks to reinforce syntax and concepts." },
+                sandbox: { title: "Under the Hood", sub: "Explore underlying Java REST configurations and AI prompt layouts." }
+            };
+
+            const info = headers[tabId] || { title: "Study Hub", sub: "" };
+            viewTitle.textContent = info.title;
+            viewSubtitle.textContent = info.sub;
+
+            // Trigger curriculum updates if opening Dashboard or Roadmap
+            if (tabId === 'dashboard' || tabId === 'roadmap') {
+                renderCurriculumRoadmaps();
+            }
+        }
+
+        // PROVIDER DROPDOWN CHANGE
         providerModeSelect.addEventListener("change", (e) => {
             const val = e.target.value;
             localStorage.setItem("study_provider_mode", val);
@@ -1289,14 +2366,6 @@
             openAiApiKeyInput.type = isPassword ? "text" : "password";
         });
 
-        jsonToggleCheckbox.addEventListener("change", (e) => {
-            jsonBox.classList.toggle("visible", e.target.checked);
-        });
-
-        // Initialize App
-        updateProviderVisibility(providerModeSelect.value);
-        detectProviderMode();
-
         function updateProviderVisibility(mode) {
             if (mode === 'openai') {
                 apiKeyContainer.style.display = "flex";
@@ -1305,30 +2374,33 @@
             }
         }
 
-        // Automatically determine connection status & check if local Spring Boot API exists
+        // SERVER CONNECTIVITY STATUS CHECK
         async function detectProviderMode() {
-            connectionStatus.className = "status-badge";
-            connectionText.textContent = "Checking status...";
+            sidebarConfigCard.className = "config-card";
+            serverStatusBadge.className = "server-status-badge offline";
+            serverStatusText.textContent = "Server Offline";
             
             try {
                 const response = await fetch("/api/study/status");
                 if (response.ok) {
                     const status = await response.json();
                     serverActive = true;
+                    activeProfile = status.profiles ? status.profiles.join(', ') : 'default';
                     
+                    serverStatusBadge.className = "server-status-badge online";
+                    serverStatusText.textContent = `Server Active (${status.provider || 'Mock'})`;
+
                     const selectVal = providerModeSelect.value;
                     if (selectVal === 'auto' || selectVal === 'server') {
                         currentMode = 'server';
-                        connectionStatus.classList.add("connected");
-                        connectionText.textContent = `Java Server (${status.provider || 'Mock'})`;
+                        sidebarConfigCard.classList.add("connected");
+                        document.getElementById("config-dot").style.background = "var(--success)";
                     } else if (selectVal === 'openai') {
                         currentMode = 'openai';
-                        connectionStatus.classList.add("openai");
-                        connectionText.textContent = "Client OpenAI (Active)";
+                        sidebarConfigCard.classList.add("openai");
                     } else {
                         currentMode = 'demo';
-                        connectionStatus.classList.add("demo");
-                        connectionText.textContent = "Demo Mode (Static)";
+                        sidebarConfigCard.classList.add("demo");
                     }
                 } else {
                     handleServerOffline();
@@ -1340,46 +2412,243 @@
 
         function handleServerOffline() {
             serverActive = false;
+            activeProfile = 'offline-mock';
             const selectVal = providerModeSelect.value;
             if (selectVal === 'server') {
                 currentMode = 'demo';
-                connectionStatus.classList.add("demo");
-                connectionText.textContent = "Java Offline (Using Demo)";
+                sidebarConfigCard.classList.add("demo");
             } else if (selectVal === 'openai') {
                 currentMode = 'openai';
-                connectionStatus.classList.add("openai");
-                connectionText.textContent = "Client OpenAI (Active)";
+                sidebarConfigCard.classList.add("openai");
             } else {
                 currentMode = 'demo';
-                connectionStatus.classList.add("demo");
-                connectionText.textContent = "Demo Mode (Static)";
+                sidebarConfigCard.classList.add("demo");
             }
         }
 
-        // Form Submission Interception
-        document.getElementById("explain-form").addEventListener("submit", (e) => handleFormSubmit(e, "/api/study/explain", renderExplainResponse));
-        document.getElementById("quiz-form").addEventListener("submit", (e) => handleFormSubmit(e, "/api/study/quiz", renderQuizResponse));
-        document.getElementById("flashcards-form").addEventListener("submit", (e) => handleFormSubmit(e, "/api/study/flashcards", renderFlashcardsResponse));
+        // DEV SANDBOX SUBTABS
+        sandboxTabBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                sandboxTabBtns.forEach(b => b.classList.remove("active"));
+                sandboxSubtabs.forEach(s => s.style.display = "none");
+                
+                btn.classList.add("active");
+                const stabId = btn.dataset.stab;
+                document.getElementById(`stab-${stabId}`).style.display = "block";
+            });
+        });
 
-        async function handleFormSubmit(event, endpoint, renderer) {
+        // POPULATE UNDER THE HOOD
+        function updateSandbox(type, endpoint, requestData, responseData) {
+            sandboxEndpoint.textContent = endpoint;
+            sandboxService.textContent = currentMode === 'server' 
+                ? (activeProfile.includes("openai") ? "SpringAiStudyClient.java" : "MockStudyAiClient.java")
+                : (currentMode === 'openai' ? "Client-side OpenAI Integration" : "Client-side Offline Mock");
+            
+            sandboxProfile.textContent = currentMode === 'server' ? activeProfile : "client-fallback";
+            
+            // Code
+            sandboxJavaCode.innerHTML = `<button class="copy-btn" onclick="copyToClipboard('sandbox-java-code')">Copy</button>` + 
+                escapeHtml(JAVA_SNIPPETS[type] || "No Java snippet associated.");
+                
+            // Prompts
+            sandboxPromptsCode.innerHTML = `<button class="copy-btn" onclick="copyToClipboard('sandbox-prompts-code')">Copy</button>` + 
+                escapeHtml(PROMPT_TEMPLATES[type] || "No prompt template associated.");
+                
+            // JSON payloads
+            sandboxRequestJson.textContent = JSON.stringify(requestData, null, 2);
+            sandboxResponseJson.textContent = JSON.stringify(responseData, null, 2);
+        }
+
+        // UTILITY CLIPBOARD COPY
+        window.copyToClipboard = function(elementId) {
+            const el = document.getElementById(elementId);
+            // Ignore button text in extraction
+            let text = el.innerText;
+            if (text.startsWith("Copy")) {
+                text = text.substring(4).trim();
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = el.querySelector(".copy-btn");
+                if (btn) {
+                    const old = btn.textContent;
+                    btn.textContent = "Copied!";
+                    setTimeout(() => btn.textContent = old, 1500);
+                }
+            });
+        };
+
+        // INTERACTIVE CURRICULUM TIMELINE RENDERING
+        function renderCurriculumRoadmaps() {
+            const nodesContainer = document.getElementById("roadmap-nodes-container");
+            const summaryContainer = document.getElementById("dashboard-roadmap-summary");
+
+            let nodesHtml = '';
+            let summaryHtml = '';
+
+            CURRICULUM.forEach((mod, index) => {
+                const progress = appStats.moduleProgress[mod.id] || { explain: false, quiz: false, flashcards: false };
+                const totalSteps = 3;
+                const completedSteps = (progress.explain ? 1 : 0) + (progress.quiz ? 1 : 0) + (progress.flashcards ? 1 : 0);
+                const isMastered = completedSteps === totalSteps;
+                const progressPct = Math.round((completedSteps / totalSteps) * 100);
+
+                let nodeStatusClass = 'active'; // Default
+                let statusText = 'In Progress';
+                if (isMastered) {
+                    nodeStatusClass = 'completed';
+                    statusText = 'Mastered';
+                } else if (completedSteps === 0) {
+                    nodeStatusClass = '';
+                    statusText = 'Locked / Not Started';
+                }
+
+                // Render Roadmap Nodes
+                nodesHtml += `
+                    <div class="roadmap-node ${nodeStatusClass}" id="node-${mod.id}">
+                        <div class="roadmap-dot-container">
+                            <div class="roadmap-dot" onclick="quickLearnModule('${mod.id}')">${mod.num}</div>
+                        </div>
+                        <div class="roadmap-content">
+                            <div class="roadmap-node-header">
+                                <h3 class="roadmap-node-title">${escapeHtml(mod.title)}</h3>
+                                <span class="roadmap-status-tag">${statusText}</span>
+                            </div>
+                            <p class="roadmap-node-desc">${escapeHtml(mod.description)}</p>
+                            
+                            <div class="roadmap-actions">
+                                <button class="roadmap-action-btn" onclick="triggerTutorAction('${mod.id}')" style="${progress.explain ? 'color: var(--success);' : ''}">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    ${progress.explain ? 'Tutor Lesson (Done)' : 'Tutor Concept'}
+                                </button>
+                                
+                                <button class="roadmap-action-btn" onclick="triggerQuizAction('${mod.id}')" style="${progress.quiz ? 'color: var(--success);' : ''}">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2">
+                                        <polyline points="9 11 12 14 22 4"/>
+                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                    </svg>
+                                    ${progress.quiz ? 'Practice Quiz (Done)' : 'Practice Quiz'}
+                                </button>
+                                
+                                <button class="roadmap-action-btn" onclick="triggerFlashcardAction('${mod.id}')" style="${progress.flashcards ? 'color: var(--success);' : ''}">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="9" y1="9" x2="15" y2="9"/>
+                                        <line x1="9" y1="13" x2="15" y2="13"/>
+                                    </svg>
+                                    ${progress.flashcards ? 'Flashcards (Done)' : 'Study Deck'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Render Dashboard Summary Row
+                const stepIndicators = `
+                    <div style="display:flex; gap:6px; margin-top: 6px;">
+                        <span style="font-size:11px; padding:2px 8px; border-radius:4px; background:${progress.explain ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.02)'}; color:${progress.explain ? 'var(--success)' : 'var(--muted)'};">Tutor</span>
+                        <span style="font-size:11px; padding:2px 8px; border-radius:4px; background:${progress.quiz ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.02)'}; color:${progress.quiz ? 'var(--success)' : 'var(--muted)'};">Quiz</span>
+                        <span style="font-size:11px; padding:2px 8px; border-radius:4px; background:${progress.flashcards ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.02)'}; color:${progress.flashcards ? 'var(--success)' : 'var(--muted)'};">Deck</span>
+                    </div>
+                `;
+
+                summaryHtml += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--line); padding: 14px 0;">
+                        <div>
+                            <span style="font-size: 11px; font-weight:700; color:var(--muted); text-transform:uppercase;">Module ${mod.num}</span>
+                            <div style="font-size:15px; font-weight:700; color:white;">${escapeHtml(mod.title)}</div>
+                            ${stepIndicators}
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="roadmap-status-tag" style="display:inline-block; margin-bottom:4px; ${isMastered ? 'color: var(--success); border-color: rgba(16,185,129,0.2); background: rgba(16,185,129,0.05)' : ''}">
+                                ${statusText}
+                            </span>
+                            <div style="font-size:12px; color:var(--muted); font-weight:600;">${progressPct}% Complete</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (nodesContainer) nodesContainer.innerHTML = nodesHtml;
+            if (summaryContainer) summaryContainer.innerHTML = summaryHtml;
+        }
+
+        // ROADMAP INTERACTIVE ACTION TRIGGERS
+        window.triggerTutorAction = function(moduleId) {
+            const mod = CURRICULUM.find(m => m.id === moduleId);
+            if (!mod) return;
+            switchTab('tutor');
+            document.querySelector("#explain-form textarea[name='question']").value = mod.question;
+            document.querySelector("#explain-form select[name='level']").value = mod.level;
+            document.querySelector("#explain-form input[name='goal']").value = mod.goal;
+            
+            // Mark source mapping
+            currentActiveModuleSource = moduleId;
+
+            // Submit
+            document.getElementById("explain-form").dispatchEvent(new Event('submit'));
+        };
+
+        window.triggerQuizAction = function(moduleId) {
+            const mod = CURRICULUM.find(m => m.id === moduleId);
+            if (!mod) return;
+            switchTab('quiz');
+            document.querySelector("#quiz-form input[name='topic']").value = mod.topic;
+            document.querySelector("#quiz-form select[name='difficulty']").value = mod.difficulty;
+            document.querySelector("#quiz-form input[name='numberOfQuestions']").value = mod.count;
+            
+            // Mark source mapping
+            currentActiveModuleSource = moduleId;
+
+            // Submit
+            document.getElementById("quiz-form").dispatchEvent(new Event('submit'));
+        };
+
+        window.triggerFlashcardAction = function(moduleId) {
+            const mod = CURRICULUM.find(m => m.id === moduleId);
+            if (!mod) return;
+            switchTab('flashcards');
+            document.querySelector("#flashcards-form input[name='topic']").value = mod.topic;
+            document.querySelector("#flashcards-form select[name='level']").value = mod.level;
+            document.querySelector("#flashcards-form input[name='count']").value = mod.count;
+            
+            // Mark source mapping
+            currentActiveModuleSource = moduleId;
+
+            // Submit
+            document.getElementById("flashcards-form").dispatchEvent(new Event('submit'));
+        };
+
+        window.quickLearnModule = function(moduleId) {
+            triggerTutorAction(moduleId);
+        };
+
+        // TRACK CURRENT SUBMIT SOURCE FOR PROGRESS RECORDING
+        let currentActiveModuleSource = null;
+
+        // FORM SUBMISSION & BACKEND COMMUNICATION
+        document.getElementById("explain-form").addEventListener("submit", (e) => handleFormSubmit(e, "explain", "/api/study/explain", renderExplainResponse));
+        document.getElementById("quiz-form").addEventListener("submit", (e) => handleFormSubmit(e, "quiz", "/api/study/quiz", renderQuizResponse));
+        document.getElementById("flashcards-form").addEventListener("submit", (e) => handleFormSubmit(e, "flashcards", "/api/study/flashcards", renderFlashcardsResponse));
+
+        async function handleFormSubmit(event, type, endpoint, renderer) {
             event.preventDefault();
             const form = event.target;
             const formData = new FormData(form);
             const rawBody = Object.fromEntries(formData.entries());
 
-            // Convert numbers
+            // Convert numeric values
             if (rawBody.numberOfQuestions) rawBody.numberOfQuestions = Number(rawBody.numberOfQuestions);
             if (rawBody.count) rawBody.count = Number(rawBody.count);
 
-            loadingContainer.classList.add("visible");
-            outputCard.classList.remove("visible");
+            loadingMessage.textContent = `Consulting the Spring AI Engine (${type.toUpperCase()})...`;
+            loadingOverlay.classList.add("visible");
 
             let data = null;
-            let source = "Demo Mode Mock Client";
-
             try {
                 if (currentMode === 'server') {
-                    source = "Local Spring Boot Server";
                     const res = await fetch(endpoint, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -1388,84 +2657,72 @@
                     if (!res.ok) throw new Error(`Java Server returned HTTP ${res.status}`);
                     data = await res.json();
                 } else if (currentMode === 'openai') {
-                    source = "Direct Client-side OpenAI Call";
                     data = await callClientOpenAI(endpoint, rawBody);
                 } else {
-                    source = "Demo Mode Mock Client";
                     data = generateClientMockData(endpoint, rawBody);
                 }
 
-                // Render success
-                outputSourceBadge.textContent = `Source: ${source}`;
-                rawJsonOutput.textContent = JSON.stringify(data, null, 2);
-                
-                // Call actual tab renderer
+                // Render result
                 renderer(data);
                 
-                outputCard.classList.add("visible");
+                // Populate Sandbox
+                updateSandbox(type, endpoint, rawBody, data);
             } catch (error) {
                 console.error(error);
-                responseContent.innerHTML = `
-                    <div style="background: var(--error-glow); border: 1px solid var(--error); border-radius: 8px; padding: 16px; color: #fecdd3; font-weight: 500;">
-                        <div style="display:flex; align-items:center; gap:10px; font-weight:700; margin-bottom:4px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            Execution Failure
-                        </div>
-                        ${error.message || "An unexpected error occurred during the API request."}
-                    </div>
-                `;
-                rawJsonOutput.textContent = JSON.stringify({ error: error.message }, null, 2);
-                outputCard.classList.add("visible");
+                alert(`Error calling service: ${error.message}`);
             } finally {
-                loadingContainer.classList.remove("visible");
+                loadingOverlay.classList.remove("visible");
             }
         }
 
-        // Renderers: 1. Explain
+        // RENDER 1: TUTOR RESPONSE
         function renderExplainResponse(data) {
-            const answerHtml = marked.parse(data.answer || '');
-            let stepsHtml = '';
+            tutorPlaceholder.style.display = "none";
+            tutorResponseContainer.style.display = "block";
             
+            const html = marked.parse(data.answer || "No response received.");
+            tutorMarkdownContent.innerHTML = html;
+
+            // Render suggested questions
             if (data.suggestedNextSteps && data.suggestedNextSteps.length > 0) {
-                const stepButtons = data.suggestedNextSteps
-                    .map(step => `<button class="step-btn" onclick="askQuickConcept('${escapeJs(step)}')">${escapeHtml(step)}</button>`)
+                tutorNextSteps.style.display = "block";
+                tutorNextButtons.innerHTML = data.suggestedNextSteps
+                    .map(step => `<button class="suggested-btn" onclick="askQuickConcept('${escapeJs(step)}')">${escapeHtml(step)}</button>`)
                     .join('');
-                
-                stepsHtml = `
-                    <div class="suggested-steps">
-                        <h4>Suggested Next Questions</h4>
-                        <div class="step-tags">${stepButtons}</div>
-                    </div>
-                `;
+            } else {
+                tutorNextSteps.style.display = "none";
             }
 
-            responseContent.innerHTML = `
-                <div class="markdown-body">
-                    ${answerHtml}
-                </div>
-                ${stepsHtml}
-            `;
+            // Record Stats
+            appStats.explains++;
+            if (currentActiveModuleSource) {
+                appStats.moduleProgress[currentActiveModuleSource].explain = true;
+            }
+            saveStats();
         }
 
-        // Facilitates clicking on a suggested concept
         window.askQuickConcept = function(concept) {
-            document.querySelector("[data-tab='explain']").click();
             document.querySelector("#explain-form textarea[name='question']").value = concept;
             document.getElementById("explain-form").dispatchEvent(new Event('submit'));
         };
 
-        // Renderers: 2. Interactive Quiz Game
+        // RENDER 2: QUIZ ARENA
         let activeQuizQuestions = [];
         let currentQuizIndex = 0;
         let quizScore = 0;
 
         function renderQuizResponse(data) {
+            quizPlaceholder.style.display = "none";
+            quizSummaryArena.style.display = "none";
+            quizActiveArena.style.display = "block";
+
             activeQuizQuestions = data.questions || [];
             currentQuizIndex = 0;
             quizScore = 0;
-            
+
             if (activeQuizQuestions.length === 0) {
-                responseContent.innerHTML = `<p>No questions generated.</p>`;
+                quizQuestionText.textContent = "Failed to generate questions. Please try again.";
+                quizOptionsContainer.innerHTML = '';
                 return;
             }
 
@@ -1474,82 +2731,65 @@
 
         function showQuizQuestion() {
             const q = activeQuizQuestions[currentQuizIndex];
-            const progressPct = ((currentQuizIndex) / activeQuizQuestions.length) * 100;
+            const total = activeQuizQuestions.length;
+            const progressPct = Math.round((currentQuizIndex / total) * 100);
+
+            quizProgressBarFill.style.width = `${progressPct}%`;
+            quizHudIndex.textContent = `Question ${currentQuizIndex + 1} of ${total}`;
+            quizHudScore.textContent = `Score: ${quizScore}/${total}`;
             
-            // Build options buttons
-            const optionsHtml = q.options.map((opt, idx) => `
+            quizQuestionText.textContent = q.question;
+            quizExplanationBox.style.display = "none";
+            quizActionsContainer.style.display = "none";
+
+            // Render options
+            quizOptionsContainer.innerHTML = q.options.map(opt => `
                 <button class="option-btn" onclick="selectQuizOption(this, '${escapeJs(opt)}')">
                     <span>${escapeHtml(opt)}</span>
-                    <!-- Correct Icon -->
-                    <svg class="option-feedback-icon correct-icon" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="feedback-icon correct-icon" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
-                    <!-- Incorrect Icon -->
-                    <svg class="option-feedback-icon incorrect-icon" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="feedback-icon incorrect-icon" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"/>
                         <line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
                 </button>
             `).join('');
-
-            responseContent.innerHTML = `
-                <div class="quiz-container">
-                    <div class="quiz-progress-bar">
-                        <div class="quiz-progress-fill" style="width: ${progressPct}%"></div>
-                    </div>
-                    <div class="quiz-hud">
-                        <span>Question ${currentQuizIndex + 1} of ${activeQuizQuestions.length}</span>
-                        <span>Score: ${quizScore}/${activeQuizQuestions.length}</span>
-                    </div>
-                    <div class="quiz-question-box">
-                        ${escapeHtml(q.question)}
-                    </div>
-                    <div class="quiz-options" id="quiz-options-box">
-                        ${optionsHtml}
-                    </div>
-                    
-                    <div class="quiz-explanation" id="quiz-explanation-box">
-                        <strong>Explanation:</strong>
-                        <span>${escapeHtml(q.explanation)}</span>
-                    </div>
-                    
-                    <div class="quiz-actions" style="display:none;" id="quiz-action-box">
-                        <button class="btn-primary" onclick="nextQuizStep()">
-                            ${currentQuizIndex === activeQuizQuestions.length - 1 ? 'Show Score' : 'Next Question'}
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </button>
-                    </div>
-                </div>
-            `;
         }
 
-        window.selectQuizOption = function(btn, selectedOption) {
+        window.selectQuizOption = function(btn, selected) {
             const q = activeQuizQuestions[currentQuizIndex];
-            const optionsBox = document.getElementById("quiz-options-box");
-            const explanationBox = document.getElementById("quiz-explanation-box");
-            const actionBox = document.getElementById("quiz-action-box");
+            const buttons = quizOptionsContainer.querySelectorAll("button");
             
-            // Disable all buttons to prevent clicking again
-            const buttons = optionsBox.querySelectorAll("button");
+            // Lock inputs
             buttons.forEach(b => b.disabled = true);
-            
-            const isCorrect = selectedOption === q.answer;
-            if (isCorrect) {
+
+            const correct = selected === q.answer;
+            if (correct) {
                 btn.classList.add("correct");
                 quizScore++;
             } else {
                 btn.classList.add("incorrect");
-                // Highlight the correct one
+                // Highlight correct
                 buttons.forEach(b => {
-                    if (b.querySelector('span').textContent === q.answer) {
+                    if (b.querySelector("span").textContent === q.answer) {
                         b.classList.add("correct");
                     }
                 });
             }
 
-            // Show explanation and next button
-            explanationBox.classList.add("visible");
-            actionBox.style.display = "flex";
+            // Show explanation
+            quizExplanationText.textContent = q.explanation;
+            quizExplanationBox.style.display = "block";
+
+            // Show next btn
+            quizActionsContainer.style.display = "flex";
+            
+            // Adjust label
+            const isLast = currentQuizIndex === activeQuizQuestions.length - 1;
+            document.getElementById("quiz-next-btn").innerHTML = isLast 
+                ? `Show Results <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`
+                : `Next Question <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
         };
 
         window.nextQuizStep = function() {
@@ -1562,57 +2802,56 @@
         };
 
         function showQuizSummary() {
-            const pct = Math.round((quizScore / activeQuizQuestions.length) * 100);
-            const dashArray = `${pct}, 100`;
+            quizActiveArena.style.display = "none";
+            quizSummaryArena.style.display = "block";
+
+            const total = activeQuizQuestions.length;
+            const pct = Math.round((quizScore / total) * 100);
             
-            let feedback = "Keep working on your skills! A bit more practice will go a long way.";
-            if (pct === 100) feedback = "Absolute Genius! You answered every question perfectly. 🌟";
-            else if (pct >= 70) feedback = "Fantastic Job! You have a solid grasp of this topic. Good job!";
-            else if (pct >= 40) feedback = "Decent effort. Try re-reading the explanations to solidify your knowledge.";
+            // Dash array progress
+            quizSummaryRadial.setAttribute("stroke-dasharray", `${pct}, 100`);
+            quizSummaryScoreText.textContent = `${pct}%`;
             
-            responseContent.innerHTML = `
-                <div class="quiz-summary">
-                    <svg viewBox="0 0 36 36" class="circular-chart">
-                        <path class="circle-bg"
-                            d="M18 2.0845
-                            a 15.9155 15.9155 0 0 1 0 31.831
-                            a 15.9155 15.9155 0 0 1 0 -31.831"
-                        />
-                        <path class="circle"
-                            stroke-dasharray="${dashArray}"
-                            d="M18 2.0845
-                            a 15.9155 15.9155 0 0 1 0 31.831
-                            a 15.9155 15.9155 0 0 1 0 -31.831"
-                        />
-                        <text x="18" y="20.3" class="percentage">${pct}%</text>
-                    </svg>
-                    
-                    <div class="quiz-score-text">Score: ${quizScore} / ${activeQuizQuestions.length}</div>
-                    <div class="quiz-feedback-msg">${feedback}</div>
-                    
-                    <button class="btn-primary" onclick="restartQuiz()" style="margin-top: 8px;">
-                        Retake Quiz
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                    </button>
-                </div>
-            `;
+            let feedback = "Decent try! Go through the tutor concept node again to build confidence.";
+            if (pct === 100) {
+                feedback = "Flawless Score! You are standardizing structured entities like a pro. 🌟";
+            } else if (pct >= 70) {
+                feedback = "Great job! You have a firm grasp over this module.";
+            }
+
+            quizSummaryTitle.textContent = pct >= 70 ? "Congratulations!" : "Keep Practicing!";
+            quizSummaryFeedback.textContent = `You scored ${quizScore} out of ${total} correct. (${feedback})`;
+
+            // Record Stats
+            if (pct >= 70) {
+                appStats.quizzes++;
+                if (currentActiveModuleSource) {
+                    appStats.moduleProgress[currentActiveModuleSource].quiz = true;
+                }
+            }
+            saveStats();
         }
 
         window.restartQuiz = function() {
+            quizSummaryArena.style.display = "none";
             renderQuizResponse({ questions: activeQuizQuestions });
         };
 
-
-        // Renderers: 3. Flashcards 3D Carousel
+        // RENDER 3: FLASHCARDS CAROUSEL
         let activeFlashcards = [];
         let currentFlashcardIndex = 0;
+        let cardMasteredCount = 0;
 
         function renderFlashcardsResponse(data) {
+            flashcardPlaceholder.style.display = "none";
+            flashcardActiveArena.style.display = "flex";
+
             activeFlashcards = data.cards || [];
             currentFlashcardIndex = 0;
+            cardMasteredCount = 0;
 
             if (activeFlashcards.length === 0) {
-                responseContent.innerHTML = `<p>No cards generated.</p>`;
+                cardFrontText.textContent = "No flashcards generated.";
                 return;
             }
 
@@ -1622,61 +2861,28 @@
         function showFlashcard() {
             const card = activeFlashcards[currentFlashcardIndex];
             
-            responseContent.innerHTML = `
-                <div class="flashcard-wrapper">
-                    <div class="flashcard" id="flashcard-element" onclick="flipFlashcard()">
-                        <!-- Front Face -->
-                        <div class="card-face card-front">
-                            <span class="card-tag">Question</span>
-                            <div class="card-body">${escapeHtml(card.front)}</div>
-                            <div class="card-hint-text" id="card-hint-box">Hint: ${escapeHtml(card.hint)}</div>
-                            <div class="card-footer-tip">Click card to Flip / Show Answer</div>
-                        </div>
-                        
-                        <!-- Back Face -->
-                        <div class="card-face card-back">
-                            <span class="card-tag">Answer</span>
-                            <div class="card-body" style="font-size: 15px; font-weight:500;">${escapeHtml(card.back)}</div>
-                            <div class="card-footer-tip">Click card to Flip back</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="flashcard-controls">
-                    <button class="flashcard-nav-btn" onclick="prevFlashcard()" id="card-prev-btn">
-                        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                    </button>
-                    
-                    <button class="flashcard-action-btn" onclick="revealFlashcardHint(event)" id="card-hint-btn">
-                        Reveal Hint
-                    </button>
-                    
-                    <span class="flashcard-progress" id="card-progress-label">
-                        Card ${currentFlashcardIndex + 1} of ${activeFlashcards.length}
-                    </span>
-                    
-                    <button class="flashcard-nav-btn" onclick="nextFlashcard()" id="card-next-btn">
-                        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                    </button>
-                </div>
-            `;
-            
-            updateFlashcardButtons();
+            // Reset flipping
+            flashcardElement.classList.remove("flipped");
+            cardHintBox.classList.remove("visible");
+            cardHintBox.textContent = `Hint: ${card.hint}`;
+
+            cardFrontText.textContent = card.front;
+            cardBackText.textContent = card.back;
+
+            const total = activeFlashcards.length;
+            cardProgressLabel.textContent = `Card ${currentFlashcardIndex + 1} of ${total}`;
+
+            cardPrevBtn.disabled = currentFlashcardIndex === 0;
+            cardNextBtn.disabled = currentFlashcardIndex === total - 1;
         }
 
         window.flipFlashcard = function() {
-            const cardEl = document.getElementById("flashcard-element");
-            if (cardEl) {
-                cardEl.classList.toggle("flipped");
-            }
+            flashcardElement.classList.toggle("flipped");
         };
 
         window.revealFlashcardHint = function(e) {
-            e.stopPropagation(); // Avoid triggering flip
-            const hintBox = document.getElementById("card-hint-box");
-            if (hintBox) {
-                hintBox.classList.add("visible");
-            }
+            e.stopPropagation(); // Prevent flip trigger
+            cardHintBox.classList.add("visible");
         };
 
         window.prevFlashcard = function() {
@@ -1693,37 +2899,44 @@
             }
         };
 
-        function updateFlashcardButtons() {
-            const prevBtn = document.getElementById("card-prev-btn");
-            const nextBtn = document.getElementById("card-next-btn");
+        window.masterFlashcard = function() {
+            cardMasteredCount++;
             
-            if (prevBtn) prevBtn.disabled = currentFlashcardIndex === 0;
-            if (nextBtn) nextBtn.disabled = currentFlashcardIndex === activeFlashcards.length - 1;
-        }
+            // Auto progress
+            if (currentFlashcardIndex < activeFlashcards.length - 1) {
+                nextFlashcard();
+            } else {
+                alert(`Deck Completed! You mastered ${cardMasteredCount} out of ${activeFlashcards.length} cards.`);
+                
+                // Record Stats
+                appStats.flashcards++;
+                if (currentActiveModuleSource) {
+                    appStats.moduleProgress[currentActiveModuleSource].flashcards = true;
+                }
+                saveStats();
+                switchTab('dashboard');
+            }
+        };
 
-
-        // OpenAI client-side calling logic
+        // CLIENT OPENAI DIRECT CALLS
         async function callClientOpenAI(endpoint, requestBody) {
             const apiKey = localStorage.getItem("openai_api_key");
             if (!apiKey) {
-                throw new Error("No OpenAI API key specified. Please enter it in the configuration sidebar.");
+                throw new Error("Missing OpenAI API key. Fill the input field at the bottom of the sidebar config.");
             }
 
-            loadingTextSpan.textContent = "Connecting to OpenAI directly...";
-
-            let systemPrompt = "";
+            let systemPrompt = "You are StudyBuddy, a helpful tutor. Return responses matching the requested JSON Schema format.";
             let userPrompt = "";
-            let jsonSchema = {};
 
-            if (endpoint.endsWith("/explain")) {
-                systemPrompt = "You are a helpful IT tutor. Explain the concept clearly in detail using proper markdown formatting (headers, bullets, inline code, and code blocks). Your response must be returned as a JSON object matching this schema:\n{\n  \"provider\": \"OpenAI Client-side\",\n  \"answer\": \"Detailed explanation markdown here...\",\n  \"suggestedNextSteps\": [\"next question 1\", \"next question 2\", \"next question 3\"]\n}";
-                userPrompt = `Please explain: "${requestBody.question}". Target audience level: ${requestBody.level}. Learning objective/goal: ${requestBody.goal}.`;
-            } else if (endpoint.endsWith("/quiz")) {
-                systemPrompt = "You are a Quiz generator. Create a multiple-choice practice quiz. Return the output as a JSON object matching this schema:\n{\n  \"provider\": \"OpenAI Client-side\",\n  \"title\": \"Quiz Topic\",\n  \"difficulty\": \"Difficulty Level\",\n  \"questions\": [\n    {\n      \"question\": \"Question text here\",\n      \"options\": [\"Option A\", \"Option B\", \"Option C\", \"Option D\"],\n      \"answer\": \"The exact text string matching the correct option\",\n      \"explanation\": \"Detailed explanation of why this answer is correct\"\n    }\n  ]\n}";
-                userPrompt = `Generate a quiz about: "${requestBody.topic}". Difficulty: ${requestBody.difficulty}. Generate exactly ${requestBody.numberOfQuestions} questions.`;
-            } else if (endpoint.endsWith("/flashcards")) {
-                systemPrompt = "You are a Flashcard generator. Create a deck of flashcards. Return the output as a JSON object matching this schema:\n{\n  \"provider\": \"OpenAI Client-side\",\n  \"topic\": \"Topic\",\n  \"level\": \"Level\",\n  \"cards\": [\n    {\n      \"front\": \"Term, question, or front of card\",\n      \"back\": \"Definition, response, or back of card\",\n      \"hint\": \"Short, helpful clue to trigger memory\"\n    }\n  ]\n}";
-                userPrompt = `Generate a deck of flashcards about: "${requestBody.topic}". Level: ${requestBody.level || 'beginner'}. Create exactly ${requestBody.count} flashcards.`;
+            if (endpoint.includes("/explain")) {
+                systemPrompt += " Output a JSON structure with 'answer' (Markdown text) and 'suggestedNextSteps' (Array of 3 strings).";
+                userPrompt = `Level: ${requestBody.level || "intermediate"}. Goal: ${requestBody.goal || "explain"}. Question: ${requestBody.question}`;
+            } else if (endpoint.includes("/quiz")) {
+                systemPrompt += " Output a JSON structure with 'title', 'difficulty', and 'questions' (Array of objects with 'question', 'options' (array of 4), 'answer' (exact match string), 'explanation').";
+                userPrompt = `Topic: ${requestBody.topic}. Difficulty: ${requestBody.difficulty}. Generate ${requestBody.numberOfQuestions} questions.`;
+            } else if (endpoint.includes("/flashcards")) {
+                systemPrompt += " Output a JSON structure with 'topic', 'level', and 'cards' (Array of objects with 'front', 'back', 'hint').";
+                userPrompt = `Topic: ${requestBody.topic}. Count: ${requestBody.count}. Level: ${requestBody.level}`;
             }
 
             const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -1744,129 +2957,87 @@
             });
 
             if (!response.ok) {
-                const errJson = await response.json().catch(() => ({}));
-                throw new Error(errJson.error?.message || `OpenAI returned status HTTP ${response.status}`);
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error?.message || `OpenAI returned status ${response.status}`);
             }
 
             const result = await response.json();
-            const contentString = result.choices[0].message.content;
-            
-            try {
-                return JSON.parse(contentString);
-            } catch (err) {
-                console.error("OpenAI failed to return valid JSON:", contentString);
-                throw new Error("OpenAI completed successfully but did not return the expected JSON format. Please try again.");
-            }
+            return JSON.parse(result.choices[0].message.content);
         }
 
-
-        // Fallback Client Mock Generator (Allows instant offline testing)
+        // OFFLINE STATIC DEMO MODE DATA FALLBACKS
         function generateClientMockData(endpoint, requestBody) {
-            const topic = (requestBody.topic || requestBody.question || "Unknown Topic").trim();
-            const level = requestBody.level || requestBody.difficulty || "beginner";
-            
-            if (endpoint.endsWith("/explain")) {
+            const topic = (requestBody.topic || requestBody.question || "Topic").trim();
+            const level = requestBody.level || requestBody.difficulty || "intermediate";
+
+            if (endpoint.includes("/explain")) {
                 return {
-                    provider: "Mock Static Provider (GitHub Pages Demo)",
-                    answer: `### Overview of **${topic}**\n\nThis is a simulation of the Spring AI Study Lab running in **Demo/Mock Mode** on GitHub Pages. To use real AI generation, please input your **OpenAI API Key** in the sidebar configuration, or run the Spring Boot application locally.\n\nHere is a mock breakdown of the concept:\n\n1. **Core Concept**:\n   - *${topic}* represents a central feature in modern software architectures.\n   - At a **${level}** level, you should focus on the fundamental inputs, components, and outputs.\n\n2. **Key Components**:\n   - **Client Interface**: Initiates calls and structures prompts.\n   - **Processor Engine**: Handles requests, configurations, and environment profiles.\n   - **Response Formatter**: Map strings or entities into structured JSON outputs.\n\n\`\`\`java\n// Code demonstration for ${topic}\npublic class StudyLabDemo {\n    public static void main(String[] args) {\n        System.out.println("Exploring " + "${topic}");\n    }\n}\n\`\`\`\n\n3. **Practical Tips**:\n   - Always isolate configurations using Spring Profiles (e.g. \`mock\` vs \`openai\`).\n   - Validate payloads before calling model endpoints to save tokens.`,
+                    provider: "Offline Mock Client",
+                    answer: `### Explanation for **${topic}**\n\nThis app is currently in **Offline Demo Mode** because the Spring Boot backend could not be detected or Demo Mode was chosen in the sidebar settings. \n\n#### Core Concepts\n* **Abstract Abstraction**: Spring AI provides a common interface boundary for interacting with multiple model providers.\n* **Profile Configurations**: By deploying the \`openai\` profile in \`application-openai.yml\`, Spring wires local keys to standard REST pipelines.\n* **Structured Outputs**: Direct mapping converts raw string JSON into Java classes seamlessly.\n\n\`\`\`java\n// Standard ChatClient template\nChatClient client = ChatClient.builder()\n    .defaultSystem("You are StudyBuddy...")\n    .build();\n\`\`\`\n\n#### Pitfalls to Avoid\n* Running the local Java server without providing the \`OPENAI_API_KEY\` environment property.\n* Creating ad-hoc schemas. Rely on standard Java Records instead.`,
                     suggestedNextSteps: [
-                        `How do I configure ${topic} in production?`,
-                        `Best practices for using ${topic}`,
-                        `Common errors when writing ${topic}`
+                        `How does ChatClient communicate with OpenAI?`,
+                        `Explain profiles in application.yml`,
+                        `What is the function of .entity() mapping?`
                     ]
                 };
-            } else if (endpoint.endsWith("/quiz")) {
+            } else if (endpoint.includes("/quiz")) {
                 const count = requestBody.numberOfQuestions || 3;
-                const questions = [];
-                
-                const questionsPool = [
+                const pool = [
                     {
-                        question: `What is the primary role of a controller when dealing with ${topic}?`,
-                        options: [
-                            "To store sensitive credentials locally",
-                            "To intercept requests, call services, and return responses",
-                            "To run compilation steps automatically",
-                            "To establish database connection pools"
-                        ],
-                        answer: "To intercept requests, call services, and return responses",
-                        explanation: "A Controller in a REST application intercepts incoming requests, binds values to request DTOs, delegates to the AI client service, and formats the output."
+                        question: `Which abstraction is responsible for executing chat model queries in Spring AI?`,
+                        options: ["JdbcTemplate", "ChatClient", "SpringSecurity", "DispatcherServlet"],
+                        answer: "ChatClient",
+                        explanation: "ChatClient is the fluent API interface that manages inputs, prompts, templates, parameter bindings, and outputs."
                     },
                     {
-                        question: `Which configuration profiles are active by default for ${topic}?`,
-                        options: [
-                            "Default profiles (e.g., 'mock')",
-                            "Production cloud profiles",
-                            "Only 'openai' profiles",
-                            "No active profiles exist by default"
-                        ],
-                        answer: "Default profiles (e.g., 'mock')",
-                        explanation: "Spring Boot defaults to a 'default' or specifically declared profile in application.yml (like mock mode) so the application runs immediately without requiring external keys."
+                        question: `How are structured output schemas mapped in Spring AI?`,
+                        options: ["Raw txt arrays", "By calling .entity(MyRecord.class)", "XML files exclusively", "None of these"],
+                        answer: "By calling .entity(MyRecord.class)",
+                        explanation: "Invoking '.entity()' on the prompt client forces the LLM response to align with the properties defined in the Java Record object."
                     },
                     {
-                        question: `How does structured outputs map records in the ${topic} environment?`,
-                        options: [
-                            "Using JSON mappings to Java records directly",
-                            "By rendering templates as PDF attachments",
-                            "Using byte arrays exclusively",
-                            "Through manual system command executions"
-                        ],
-                        answer: "Using JSON mappings to Java records directly",
-                        explanation: "Spring AI's ChatClient enables structured outputs using '.entity(MyRecord.class)' which auto-injects instructions to prompt the LLM to reply in JSON conforming to the DTO structure."
-                    },
-                    {
-                        question: `Why is safety and validation important for ${topic}?`,
-                        options: [
-                            "It prevents compilation failures in Java runtimes",
-                            "To ensure input limits are not exceeded and saving API costs",
-                            "To encrypt public static pages",
-                            "To bypass environment path checkouts"
-                        ],
-                        answer: "To ensure input limits are not exceeded and saving API costs",
-                        explanation: "Using validation like @NotBlank and @Size ensures that inputs sent to downstream models are clean, secure, and will not exceed model token contexts."
+                        question: `What profile needs to be active to enable real OpenAI calls?`,
+                        options: ["mock", "dev", "openai", "prod"],
+                        answer: "openai",
+                        explanation: "The profile 'openai' contains the property injection templates to connect with standard OpenAI completions APIs."
                     }
                 ];
 
-                for (let i = 0; i < count; i++) {
-                    const qIndex = i % questionsPool.length;
-                    // Add some variance to questions
-                    const originalQ = questionsPool[qIndex];
+                const questions = [];
+                for(let i=0; i<count; i++) {
+                    const original = pool[i % pool.length];
                     questions.push({
-                        question: originalQ.question.replace("${topic}", topic),
-                        options: originalQ.options,
-                        answer: originalQ.answer,
-                        explanation: originalQ.explanation
+                        question: original.question.replace("Spring AI", topic),
+                        options: original.options,
+                        answer: original.answer,
+                        explanation: original.explanation
                     });
                 }
 
                 return {
-                    provider: "Mock Static Provider (GitHub Pages Demo)",
-                    title: `${topic} Quiz`,
+                    provider: "Offline Mock Client",
+                    title: `${topic} Challenge`,
                     difficulty: level,
                     questions: questions
                 };
-            } else if (endpoint.endsWith("/flashcards")) {
+            } else {
+                // Flashcards
                 const count = requestBody.count || 5;
-                const cards = [];
-                
-                const terms = [
-                    { front: `What is the core definition of ${topic}?`, back: `A central element that enables study labs to organize structures, test levels, and return data.`, hint: "Think of it as the subject matter." },
-                    { front: `What level of expertise is required for ${topic}?`, back: `This application supports levels starting from beginner up to advanced implementations.`, hint: "Usually specified in the request dropdown." },
-                    { front: `How is data fetched in this deck?`, back: `Via local REST controllers or direct API integrations with OpenAI's models.`, hint: "HTTP requests or mock fallbacks." },
-                    { front: `What is the active profile setting for this deck?`, back: `The application can run in either Mock/Local state or OpenAI state.`, hint: "Specified in application.yml or sidebar config." },
-                    { front: `How are structured outputs configured?`, back: `By declaring Java record formats and passing them to the AI Client mapper.`, hint: "Utilizes .entity() client mappings." }
+                const pool = [
+                    { front: `What is the role of ChatClient in ${topic}?`, back: `It is the core fluent interface for prompts and model calls.`, hint: "Fluent API in Spring AI." },
+                    { front: `What is a Java Record useful for in ${topic}?`, back: `Defining structured data shapes that prompt responses automatically conform to.`, hint: "Structured Output mapping." },
+                    { front: `What profile triggers mock responses for local testing?`, back: `Running default configs (e.g. without openai profile active).`, hint: "Runs mock client." },
+                    { front: `Where are API keys specified for ${topic}?`, back: `In environment variables or application-openai.yml configuration properties.`, hint: "OPENAI_API_KEY variable." },
+                    { front: `What parameters can be passed to prompt templates in ${topic}?`, back: `Placeholders declared in curly braces like {topic} and mapped with .param().`, hint: "Prompt templating binding." }
                 ];
 
-                for (let i = 0; i < count; i++) {
-                    const tIndex = i % terms.length;
-                    cards.push({
-                        front: terms[tIndex].front.replace("${topic}", topic),
-                        back: terms[tIndex].back.replace("${topic}", topic),
-                        hint: terms[tIndex].hint
-                    });
+                const cards = [];
+                for(let i=0; i<count; i++) {
+                    cards.push(pool[i % pool.length]);
                 }
 
                 return {
-                    provider: "Mock Static Provider (GitHub Pages Demo)",
+                    provider: "Offline Mock Client",
                     topic: topic,
                     level: level,
                     cards: cards
@@ -1874,7 +3045,7 @@
             }
         }
 
-        // Helpers
+        // HTML & JS ESCAPING HELPERS
         function escapeHtml(value) {
             return String(value ?? "")
                 .replaceAll("&", "&amp;")
@@ -1889,6 +3060,12 @@
                 .replaceAll("'", "\\'")
                 .replaceAll('"', '\\"');
         }
+
+        // INITIALIZE APP
+        loadStats();
+        updateProviderVisibility(providerModeSelect.value);
+        detectProviderMode();
+        renderCurriculumRoadmaps();
     </script>
 </body>
 </html>

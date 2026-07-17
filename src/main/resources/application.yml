@@ -4,6 +4,8 @@ spring:
   ai:
     model:
       chat: none
+    openai:
+      api-key: mock-key-not-used
 
 server:
   port: ${PORT:8080}
