@@ -34,3 +34,20 @@ app:
   quota:
     daily-limit: ${DAILY_QUOTA_LIMIT:10}
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      studyClient:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000 # 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+  retry:
+    instances:
+      studyClient:
+        maxAttempts: 3
+        waitDuration: 1000 # 1s
+
+

@@ -8,6 +8,8 @@ import com.example.studybuddy.api.QuizRequest;
 import com.example.studybuddy.api.QuizResponse;
 import java.util.List;
 import java.util.Objects;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,8 @@ public class SpringAiStudyClient implements StudyAiClient {
     }
 
     @Override
+    @CircuitBreaker(name = "studyClient", fallbackMethod = "explainFallback")
+    @Retry(name = "studyClient")
     public ExplainResponse explain(ExplainRequest request) {
         String answer = this.chatClient.prompt()
                 .user(user -> user.text("""
@@ -66,6 +70,8 @@ public class SpringAiStudyClient implements StudyAiClient {
     }
 
     @Override
+    @CircuitBreaker(name = "studyClient", fallbackMethod = "quizFallback")
+    @Retry(name = "studyClient")
     public QuizResponse quiz(QuizRequest request) {
         int count = clamp(request.numberOfQuestions(), 3, 1, 10);
         QuizResponse response = this.chatClient.prompt()
@@ -90,6 +96,8 @@ public class SpringAiStudyClient implements StudyAiClient {
     }
 
     @Override
+    @CircuitBreaker(name = "studyClient", fallbackMethod = "flashcardsFallback")
+    @Retry(name = "studyClient")
     public FlashcardDeckResponse flashcards(FlashcardRequest request) {
         int count = clamp(request.count(), 5, 1, 12);
         FlashcardDeckResponse response = this.chatClient.prompt()
@@ -137,5 +145,32 @@ public class SpringAiStudyClient implements StudyAiClient {
     private static int clamp(Integer value, int fallback, int min, int max) {
         int candidate = value == null ? fallback : value;
         return Math.max(min, Math.min(max, candidate));
+    }
+
+    // Fallback methods for Resilience4j
+    public ExplainResponse explainFallback(ExplainRequest request, Throwable t) {
+        return new ExplainResponse(
+                PROVIDER + "-fallback",
+                "The AI tutor is currently unavailable. Please try again in a moment. (Error: " + t.getMessage() + ")",
+                List.of("Try again later")
+        );
+    }
+
+    public QuizResponse quizFallback(QuizRequest request, Throwable t) {
+        return new QuizResponse(
+                PROVIDER + "-fallback",
+                "Quiz Unavailable",
+                valueOr(request.difficulty(), "beginner"),
+                List.of()
+        );
+    }
+
+    public FlashcardDeckResponse flashcardsFallback(FlashcardRequest request, Throwable t) {
+        return new FlashcardDeckResponse(
+                PROVIDER + "-fallback",
+                request.topic(),
+                valueOr(request.level(), "beginner"),
+                List.of()
+        );
     }
 }
