@@ -3213,7 +3213,16 @@ Rules:
                         await checkSession();
                         return;
                     }
-                    if (!res.ok) throw new Error(`Java Server returned HTTP ${res.status}`);
+                    if (!res.ok) {
+                        let errMsg = `Java Server returned HTTP ${res.status}`;
+                        try {
+                            const errJson = await res.json();
+                            if (errJson && errJson.message) {
+                                errMsg = errJson.message;
+                            }
+                        } catch (e) {}
+                        throw new Error(errMsg);
+                    }
                     data = await res.json();
                 } else {
                     data = generateClientMockData(endpoint, rawBody);
