@@ -6,11 +6,17 @@ import com.example.studybuddy.api.FlashcardDeckResponse;
 import com.example.studybuddy.api.FlashcardRequest;
 import com.example.studybuddy.api.QuizRequest;
 import com.example.studybuddy.api.QuizResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Objects;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.metadata.Usage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +25,12 @@ import org.springframework.stereotype.Service;
 public class SpringAiStudyClient implements StudyAiClient {
 
     private static final String PROVIDER = "spring-ai-openai";
+    private static final Logger log = LoggerFactory.getLogger(SpringAiStudyClient.class);
 
     private final ChatClient chatClient;
+    private final ObjectMapper objectMapper;
 
-    public SpringAiStudyClient(ChatClient.Builder chatClientBuilder) {
+    public SpringAiStudyClient(ChatClient.Builder chatClientBuilder, ObjectMapper objectMapper) {
         this.chatClient = chatClientBuilder
                 .defaultSystem("""
                         You are StudyBuddy, a patient AI tutor for software engineering students.
@@ -31,6 +39,7 @@ public class SpringAiStudyClient implements StudyAiClient {
                         tell them to verify against the official documentation.
                         """)
                 .build();
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -42,7 +51,8 @@ public class SpringAiStudyClient implements StudyAiClient {
     @CircuitBreaker(name = "studyClient", fallbackMethod = "explainFallback")
     @Retry(name = "studyClient")
     public ExplainResponse explain(ExplainRequest request) {
-        String answer = this.chatClient.prompt()
+        long startTime = System.currentTimeMillis();
+        ChatResponse chatResponse = this.chatClient.prompt()
                 .user(user -> user.text("""
                         Student level: {level}
                         Learning goal: {goal}
@@ -61,7 +71,11 @@ public class SpringAiStudyClient implements StudyAiClient {
                         .param("goal", valueOr(request.goal(), "understand the concept well enough to explain it"))
                         .param("question", request.question()))
                 .call()
-                .content();
+                .chatResponse();
+
+        long latency = System.currentTimeMillis() - startTime;
+        String answer = chatResponse.getResult().getOutput().getText();
+        logAiCall("/api/study/explain", latency, chatResponse.getMetadata().getUsage());
 
         return new ExplainResponse(
                 PROVIDER,
@@ -74,7 +88,8 @@ public class SpringAiStudyClient implements StudyAiClient {
     @Retry(name = "studyClient")
     public QuizResponse quiz(QuizRequest request) {
         int count = clamp(request.numberOfQuestions(), 3, 1, 10);
-        QuizResponse response = this.chatClient.prompt()
+        long startTime = System.currentTimeMillis();
+        ChatResponse chatResponse = this.chatClient.prompt()
                 .user(user -> user.text("""
                         Create a learning quiz about {topic}.
                         Difficulty: {difficulty}
@@ -90,8 +105,20 @@ public class SpringAiStudyClient implements StudyAiClient {
                         .param("difficulty", valueOr(request.difficulty(), "beginner"))
                         .param("count", count))
                 .call()
-                .entity(QuizResponse.class);
+                .chatResponse();
 
+        long latency = System.currentTimeMillis() - startTime;
+        String rawContent = chatResponse.getResult().getOutput().getText();
+        String cleanedContent = cleanJsonContent(rawContent);
+
+        QuizResponse response;
+        try {
+            response = objectMapper.readValue(cleanedContent, QuizResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse quiz response JSON: " + cleanedContent, e);
+        }
+
+        logAiCall("/api/study/quiz", latency, chatResponse.getMetadata().getUsage());
         return withProvider(response);
     }
 
@@ -100,7 +127,8 @@ public class SpringAiStudyClient implements StudyAiClient {
     @Retry(name = "studyClient")
     public FlashcardDeckResponse flashcards(FlashcardRequest request) {
         int count = clamp(request.count(), 5, 1, 12);
-        FlashcardDeckResponse response = this.chatClient.prompt()
+        long startTime = System.currentTimeMillis();
+        ChatResponse chatResponse = this.chatClient.prompt()
                 .user(user -> user.text("""
                         Create flashcards for the topic: {topic}
                         Student level: {level}
@@ -116,8 +144,20 @@ public class SpringAiStudyClient implements StudyAiClient {
                         .param("level", valueOr(request.level(), "beginner"))
                         .param("count", count))
                 .call()
-                .entity(FlashcardDeckResponse.class);
+                .chatResponse();
 
+        long latency = System.currentTimeMillis() - startTime;
+        String rawContent = chatResponse.getResult().getOutput().getContent();
+        String cleanedContent = cleanJsonContent(rawContent);
+
+        FlashcardDeckResponse response;
+        try {
+            response = objectMapper.readValue(cleanedContent, FlashcardDeckResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse flashcard response JSON: " + cleanedContent, e);
+        }
+
+        logAiCall("/api/study/flashcards", latency, chatResponse.getMetadata().getUsage());
         return withProvider(response);
     }
 
@@ -145,6 +185,34 @@ public class SpringAiStudyClient implements StudyAiClient {
     private static int clamp(Integer value, int fallback, int min, int max) {
         int candidate = value == null ? fallback : value;
         return Math.max(min, Math.min(max, candidate));
+    }
+
+    private String cleanJsonContent(String content) {
+        if (content == null) {
+            return "";
+        }
+        content = content.trim();
+        if (content.startsWith("```json")) {
+            content = content.substring(7);
+        } else if (content.startsWith("```")) {
+            content = content.substring(3);
+        }
+        if (content.endsWith("```")) {
+            content = content.substring(0, content.length() - 3);
+        }
+        return content.trim();
+    }
+
+    private void logAiCall(String endpoint, long latency, Usage usage) {
+        long promptTokens = usage != null ? usage.getPromptTokens() : 0;
+        long generationTokens = usage != null ? usage.getGenerationTokens() : 0;
+        long totalTokens = usage != null ? usage.getTotalTokens() : 0;
+
+        String requestId = Objects.requireNonNullElse(MDC.get("requestId"), "N/A");
+        String userId = Objects.requireNonNullElse(MDC.get("userId"), "anonymous");
+
+        log.info("[AI_CALL] requestId=\"{}\" userId=\"{}\" endpoint=\"{}\" latencyMs={} promptTokens={} generationTokens={} totalTokens={}",
+                requestId, userId, endpoint, latency, promptTokens, generationTokens, totalTokens);
     }
 
     // Fallback methods for Resilience4j

@@ -50,4 +50,14 @@ resilience4j:
         maxAttempts: 3
         waitDuration: 1000 # 1s
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+
+
 

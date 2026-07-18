@@ -1,6 +1,7 @@
 package com.example.studybuddy.config;
 
 import com.example.studybuddy.security.JwtAuthenticationFilter;
+import com.example.studybuddy.security.MdcFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -31,10 +32,12 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final MdcFilter mdcFilter;
     private final Environment environment;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, Environment environment) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, MdcFilter mdcFilter, Environment environment) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.mdcFilter = mdcFilter;
         this.environment = environment;
     }
 
@@ -87,7 +90,8 @@ public class SecurityConfig {
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(mdcFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
