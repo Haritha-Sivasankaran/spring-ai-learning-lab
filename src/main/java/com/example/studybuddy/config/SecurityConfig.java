@@ -1,21 +1,24 @@
 package com.example.studybuddy.config;
 
+import com.example.studybuddy.security.JwtAuthenticationFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -27,8 +30,16 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final Environment environment;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, Environment environment) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.environment = environment;
+    }
+
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public static PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -39,11 +50,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        boolean isOpenAiActive = Arrays.asList(environment.getActiveProfiles()).contains("openai");
+
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable()) // Disable CSRF for simplified REST operations
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())) // Enable H2 console frames
+            .authorizeHttpRequests(auth -> {
+                // Public authentication and metadata endpoints
+                auth.requestMatchers(
                     "/",
                     "/index.html",
                     "/static/**",
@@ -53,19 +69,25 @@ public class SecurityConfig {
                     "/favicon.ico",
                     "/api/study/status",
                     "/api/auth/login",
-                    "/api/auth/register"
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
+                    "/api/auth/register",
+                    "/h2-console/**"
+                ).permitAll();
+
+                // Dynamic study endpoint authorization
+                if (isOpenAiActive) {
+                    // Under openai profile, require token authentication for all study logic
+                    auth.requestMatchers("/api/study/**").authenticated();
+                } else {
+                    // Under mock profile, allow local development/testing without credentials
+                    auth.requestMatchers("/api/study/**").permitAll();
+                }
+
+                auth.anyRequest().authenticated();
+            })
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             )
-            .logout(logout -> logout
-                .logoutUrl("/api/auth/logout")
-                .logoutSuccessHandler((req, resp, auth) -> resp.setStatus(HttpStatus.OK.value()))
-                .deleteCookies("JSESSIONID")
-                .invalidateHttpSession(true)
-            );
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
