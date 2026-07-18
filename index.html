@@ -1525,13 +1525,25 @@
                 <p style="font-size: 13.5px; color: var(--muted); margin-top: 6px;">Sign in to your learning workspace</p>
             </div>
             <form id="login-form" class="form-grid">
-                <div class="input-group">
-                    <label style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Username</label>
-                    <input type="text" id="login-username" placeholder="Enter study workspace name..." required style="height: 48px; font-size: 14px;">
+                <div class="input-group" id="register-name-group" style="display: none;">
+                    <label style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Full Name</label>
+                    <input type="text" id="login-name" placeholder="Enter your full name..." style="height: 48px; font-size: 14px;">
                 </div>
-                <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 16px; height: 48px;">
+                <div class="input-group">
+                    <label style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Email Address</label>
+                    <input type="email" id="login-email" placeholder="student@example.com" required style="height: 48px; font-size: 14px;">
+                </div>
+                <div class="input-group">
+                    <label style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required style="height: 48px; font-size: 14px;">
+                </div>
+                <button class="btn btn-primary" type="submit" id="auth-submit-btn" style="width: 100%; margin-top: 16px; height: 48px;">
                     Access Workspace
                 </button>
+                <p style="font-size:12.5px; text-align:center; margin-top:16px; color:var(--muted);">
+                    <span id="auth-toggle-msg">Don't have an account?</span> 
+                    <a href="#" id="auth-toggle-link" style="color:var(--primary); text-decoration:none; font-weight:600; margin-left:4px;">Register here</a>
+                </p>
             </form>
         </div>
     </div>
@@ -1605,19 +1617,8 @@
                 <select id="provider-mode" class="select-custom">
                     <option value="auto">Auto (Detect Java)</option>
                     <option value="server">Java Backend Local</option>
-                    <option value="openai">Client OpenAI API</option>
                     <option value="demo">Demo Mock Mode</option>
                 </select>
-                
-                <div class="api-key-input-container" id="api-key-container">
-                    <label style="font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-top:6px; display:block;">OpenAI API Key</label>
-                    <div class="api-key-wrapper">
-                        <input type="password" id="openai-api-key" placeholder="sk-proj-...">
-                        <button type="button" class="toggle-password" id="toggle-key-visibility">
-                            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </button>
-                    </div>
-                </div>
             </div>
 
             <!-- USER SESSION MANAGER -->
@@ -1641,6 +1642,23 @@
 
         <!-- MAIN VIEWPORT -->
         <main>
+            <!-- STATIC PREVIEW BANNER -->
+            <div id="static-preview-banner" style="display:none; background: linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(225, 29, 72, 0.05) 100%); border-bottom: 1px solid rgba(244, 63, 94, 0.25); padding: 12px 24px; font-size: 13.5px; color: #fca5a5; align-items: center; justify-content: space-between; gap: 16px; width: 100%; box-sizing: border-box;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span><strong>Static Preview Mode:</strong> Local Spring Boot backend is offline. Learning features are falling back to local simulation. Clone the repo and run <code>mvn spring-boot:run</code> for the live application.</span>
+                </div>
+                <button onclick="document.getElementById('static-preview-banner').style.display='none'" style="background: none; border: none; color: #fca5a5; cursor: pointer; padding: 4px; display: flex; align-items: center;" title="Dismiss">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
             
             <!-- HEADER -->
             <header>
@@ -2146,8 +2164,8 @@ public class StudyBuddyService {
                                           </h3>
                                           <ul style="list-style:none; padding-left:0; margin:0; display:flex; flex-direction:column; gap:10px; font-size:13px;">
                                               <li><a href="https://www.youtube.com/watch?v=kU_Ua0C5-iA" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">SivaLabs Complete Guide &rarr;</a></li>
-                                              <li><a href="https://www.youtube.com/results?search_query=dan+vega+spring+ai" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Dan Vega Video Guides &rarr;</a></li>
-                                              <li><a href="https://www.coursera.org/" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Coursera GenAI Specialization &rarr;</a></li>
+                                              <li><a href="https://www.danvega.dev/blog/spring-ai-getting-started" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Dan Vega Written & Video Guide &rarr;</a></li>
+                                              <li><a href="https://www.coursera.org/learn/generative-ai-for-everyone" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">DeepLearning.AI GenAI Specialization &rarr;</a></li>
                                           </ul>
                                       </div>
 
@@ -2159,8 +2177,8 @@ public class StudyBuddyService {
                                           </h3>
                                           <ul style="list-style:none; padding-left:0; margin:0; display:flex; flex-direction:column; gap:10px; font-size:13px;">
                                               <li><a href="https://www.baeldung.com/spring-ai" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Baeldung Intro Tutorial &rarr;</a></li>
-                                              <li><a href="https://hungrycoders.com/" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Hungry Coders Setup Guide &rarr;</a></li>
-                                              <li><a href="https://towardsai.net/" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Towards AI Learn Path &rarr;</a></li>
+                                              <li><a href="https://hungrycoders.com/courses/ai-for-java-spring-boot" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Hungry Coders Spring AI Course &rarr;</a></li>
+                                              <li><a href="https://spring.io/guides/gs/spring-ai/" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none;">Official Spring AI Guides &rarr;</a></li>
                                           </ul>
                                       </div>
                                   </div>
@@ -2482,9 +2500,7 @@ Rules:
         
         const providerModeSelect = document.getElementById("provider-mode");
         const sidebarConfigCard = document.getElementById("sidebar-config-card");
-        const apiKeyContainer = document.getElementById("api-key-container");
-        const openAiApiKeyInput = document.getElementById("openai-api-key");
-        const toggleKeyVisibilityBtn = document.getElementById("toggle-key-visibility");
+
         
         const loadingOverlay = document.getElementById("loading-overlay");
         const loadingMessage = document.getElementById("loading-message");
@@ -2540,6 +2556,31 @@ Rules:
         let serverActive = false;
         let activeProfile = 'default';
         let currentUser = null;
+
+        // Safe localStorage wrapper to prevent crashes in restricted environments (e.g. file:// protocol)
+        const safeStorage = {
+            getItem(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    return this[key] || null;
+                }
+            },
+            setItem(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (e) {
+                    this[key] = String(value);
+                }
+            },
+            removeItem(key) {
+                try {
+                    localStorage.removeItem(key);
+                } catch (e) {
+                    delete this[key];
+                }
+            }
+        };
         
         // Stats and Course progression stored in LocalStorage
         let appStats = {
@@ -2559,7 +2600,7 @@ Rules:
         function loadStats() {
             if (!currentUser) return;
             const statsKey = `spring_ai_study_stats_${currentUser}`;
-            const saved = localStorage.getItem(statsKey);
+            const saved = safeStorage.getItem(statsKey);
             appStats = {
                 explains: 0,
                 quizzes: 0,
@@ -2586,7 +2627,7 @@ Rules:
         function saveStats() {
             if (!currentUser) return;
             const statsKey = `spring_ai_study_stats_${currentUser}`;
-            localStorage.setItem(statsKey, JSON.stringify(appStats));
+            safeStorage.setItem(statsKey, JSON.stringify(appStats));
             updateStatsUI();
         }
 
@@ -2597,11 +2638,11 @@ Rules:
         }
 
         // Initialize credentials
-        if (localStorage.getItem("openai_api_key")) {
-            openAiApiKeyInput.value = localStorage.getItem("openai_api_key");
+        if (safeStorage.getItem("openai_api_key")) {
+            openAiApiKeyInput.value = safeStorage.getItem("openai_api_key");
         }
-        if (localStorage.getItem("study_provider_mode")) {
-            providerModeSelect.value = localStorage.getItem("study_provider_mode");
+        if (safeStorage.getItem("study_provider_mode")) {
+            providerModeSelect.value = safeStorage.getItem("study_provider_mode");
         }
 
         // TAB SWITCHING
@@ -2636,6 +2677,7 @@ Rules:
             };
 
             // Coding Challenge test runner
+            const challengeAttempts = {};
             window.runChallengeTest = async function(challengeId, index) {
                 const statusTag = document.getElementById(`challenge-status-${index}`);
                 const detailsSpan = document.getElementById(`challenge-details-${index}`);
@@ -2655,6 +2697,10 @@ Rules:
                     return;
                 }
 
+                if (!challengeAttempts[challengeId]) {
+                    challengeAttempts[challengeId] = 0;
+                }
+
                 try {
                     const res = await fetch(`/api/study/verify/${challengeId}`);
                     if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
@@ -2666,14 +2712,29 @@ Rules:
                         statusTag.style.borderColor = "rgba(16, 185, 129, 0.2)";
                         statusTag.style.background = "rgba(16, 185, 129, 0.05)";
                         detailsSpan.innerHTML = `<strong style='color:var(--success);'>Success!</strong> ${escapeHtml(data.details)}`;
+                        challengeAttempts[challengeId] = 0;
                     } else {
+                        challengeAttempts[challengeId]++;
                         statusTag.textContent = "Failed";
                         statusTag.style.color = "var(--error)";
                         statusTag.style.borderColor = "rgba(244, 63, 94, 0.2)";
                         statusTag.style.background = "rgba(244, 63, 94, 0.05)";
-                        detailsSpan.innerHTML = `<strong style='color:var(--error);'>Not Complete:</strong> ${escapeHtml(data.details)}`;
+                        
+                        let hintText = "";
+                        if (challengeAttempts[challengeId] >= 2) {
+                            const hints = {
+                                "challenge-1": "💡 <strong>Hint:</strong> Open <code>src/main/java/com/example/studybuddy/ai/MockStudyAiClient.java</code> and change the string return in <code>explain()</code> to mention <code>JavaGuru</code> or <code>StudyBuddy Pro</code>.",
+                                "challenge-2": "💡 <strong>Hint:</strong> Add the following method in <code>StudyController.java</code>:<br><pre style='background:rgba(0,0,0,0.3); padding:8px; border-radius:4px; margin-top:4px; font-size:11px; font-family:var(--font-mono);'>@PostMapping(\"/lesson-plan\")\npublic Map&lt;String, Object&gt; lessonPlan() {\n    return Map.of(\"status\", \"ok\");\n}</pre>",
+                                "challenge-3": "💡 <strong>Hint:</strong> Change the <code>Flashcard</code> record in <code>Flashcard.java</code> to: <br><code>public record Flashcard(String front, String back, String hint, String category) {}</code> (add <code>String category</code> or <code>String difficulty</code>).",
+                                "challenge-4": "💡 <strong>Hint:</strong> Start your Spring Boot application using the openai profile, for example: <code>mvn spring-boot:run -Dspring-boot.run.profiles=openai</code>"
+                            };
+                            hintText = `<div style="margin-top: 10px; padding: 10px; background: rgba(99,102,241,0.08); border-left: 3px solid var(--primary); border-radius: 4px; font-size: 12.5px; color: #c7d2fe; line-height: 1.4;">${hints[challengeId]}</div>`;
+                        }
+                        
+                        detailsSpan.innerHTML = `<strong style='color:var(--error);'>Not Complete:</strong> ${escapeHtml(data.details)}${hintText}`;
                     }
                 } catch (e) {
+                    challengeAttempts[challengeId]++;
                     statusTag.textContent = "Error";
                     statusTag.style.color = "var(--error)";
                     statusTag.style.borderColor = "rgba(244, 63, 94, 0.2)";
@@ -2695,27 +2756,9 @@ Rules:
         // PROVIDER DROPDOWN CHANGE
         providerModeSelect.addEventListener("change", (e) => {
             const val = e.target.value;
-            localStorage.setItem("study_provider_mode", val);
-            updateProviderVisibility(val);
+            safeStorage.setItem("study_provider_mode", val);
             detectProviderMode();
         });
-
-        openAiApiKeyInput.addEventListener("input", (e) => {
-            localStorage.setItem("openai_api_key", e.target.value.trim());
-        });
-
-        toggleKeyVisibilityBtn.addEventListener("click", () => {
-            const isPassword = openAiApiKeyInput.type === "password";
-            openAiApiKeyInput.type = isPassword ? "text" : "password";
-        });
-
-        function updateProviderVisibility(mode) {
-            if (mode === 'openai') {
-                apiKeyContainer.style.display = "flex";
-            } else {
-                apiKeyContainer.style.display = "none";
-            }
-        }
 
         // SERVER CONNECTIVITY STATUS CHECK
         async function detectProviderMode() {
@@ -2738,35 +2781,31 @@ Rules:
                         currentMode = 'server';
                         sidebarConfigCard.classList.add("connected");
                         document.getElementById("config-dot").style.background = "var(--success)";
-                    } else if (selectVal === 'openai') {
-                        currentMode = 'openai';
-                        sidebarConfigCard.classList.add("openai");
                     } else {
                         currentMode = 'demo';
                         sidebarConfigCard.classList.add("demo");
                     }
+                    const banner = document.getElementById("static-preview-banner");
+                    if (banner) banner.style.display = "none";
                 } else {
                     handleServerOffline();
                 }
             } catch (err) {
                 handleServerOffline();
             }
+            await checkSession();
         }
 
         function handleServerOffline() {
             serverActive = false;
             activeProfile = 'offline-mock';
-            const selectVal = providerModeSelect.value;
-            if (selectVal === 'server') {
-                currentMode = 'demo';
-                sidebarConfigCard.classList.add("demo");
-            } else if (selectVal === 'openai') {
-                currentMode = 'openai';
-                sidebarConfigCard.classList.add("openai");
-            } else {
-                currentMode = 'demo';
-                sidebarConfigCard.classList.add("demo");
-            }
+            serverStatusBadge.className = "server-status-badge offline";
+            serverStatusText.textContent = "Server Offline";
+            currentMode = 'demo';
+            sidebarConfigCard.classList.add("demo");
+            
+            const banner = document.getElementById("static-preview-banner");
+            if (banner) banner.style.display = "flex";
         }
 
         // DEV SANDBOX SUBTABS
@@ -2997,10 +3036,13 @@ Rules:
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(rawBody)
                     });
+                    if (res.status === 401) {
+                        showToast("Session expired. Please sign in.", "error");
+                        await checkSession();
+                        return;
+                    }
                     if (!res.ok) throw new Error(`Java Server returned HTTP ${res.status}`);
                     data = await res.json();
-                } else if (currentMode === 'openai') {
-                    data = await callClientOpenAI(endpoint, rawBody);
                 } else {
                     data = generateClientMockData(endpoint, rawBody);
                 }
@@ -3012,10 +3054,74 @@ Rules:
                 updateSandbox(type, endpoint, rawBody, data);
             } catch (error) {
                 console.error(error);
-                alert(`Error calling service: ${error.message}`);
+                showToast(`API Request Failed: ${error.message}`, "error");
+                
+                // Clean up loading/active states to prevent UI hangs
+                if (type === 'explain') {
+                    tutorPlaceholder.style.display = "block";
+                    tutorResponseContainer.style.display = "none";
+                } else if (type === 'quiz') {
+                    quizPlaceholder.style.display = "block";
+                    quizActiveArena.style.display = "none";
+                    quizSummaryArena.style.display = "none";
+                } else if (type === 'flashcards') {
+                    flashcardPlaceholder.style.display = "block";
+                    flashcardActiveArena.style.display = "none";
+                }
             } finally {
                 loadingOverlay.classList.remove("visible");
             }
+        }
+
+        // MODERN TOAST NOTIFICATIONS
+        function showToast(message, type = "info") {
+            let container = document.getElementById("toast-container");
+            if (!container) {
+                container = document.createElement("div");
+                container.id = "toast-container";
+                container.style.position = "fixed";
+                container.style.bottom = "24px";
+                container.style.right = "24px";
+                container.style.display = "flex";
+                container.style.flexDirection = "column";
+                container.style.gap = "10px";
+                container.style.zIndex = "9999";
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement("div");
+            toast.style.background = type === "error" ? "rgba(244, 63, 94, 0.95)" : "rgba(16, 185, 129, 0.95)";
+            toast.style.color = "white";
+            toast.style.padding = "12px 20px";
+            toast.style.borderRadius = "8px";
+            toast.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05)";
+            toast.style.fontSize = "13.5px";
+            toast.style.fontWeight = "600";
+            toast.style.border = "1px solid rgba(255,255,255,0.1)";
+            toast.style.backdropFilter = "blur(8px)";
+            toast.style.minWidth = "280px";
+            toast.style.maxWidth = "400px";
+            toast.style.opacity = "0";
+            toast.style.transform = "translateY(20px)";
+            toast.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+            
+            const icon = type === "error" ? "❌ " : "✅ ";
+            toast.textContent = icon + message;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = "1";
+                toast.style.transform = "translateY(0)";
+            }, 10);
+
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transform = "translateY(-20px)";
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 4000);
         }
 
         // RENDER 1: TUTOR RESPONSE
@@ -3261,52 +3367,7 @@ Rules:
             }
         };
 
-        // CLIENT OPENAI DIRECT CALLS
-        async function callClientOpenAI(endpoint, requestBody) {
-            const apiKey = localStorage.getItem("openai_api_key");
-            if (!apiKey) {
-                throw new Error("Missing OpenAI API key. Fill the input field at the bottom of the sidebar config.");
-            }
 
-            let systemPrompt = "You are StudyBuddy, a helpful tutor. Return responses matching the requested JSON Schema format.";
-            let userPrompt = "";
-
-            if (endpoint.includes("/explain")) {
-                systemPrompt += " Output a JSON structure with 'answer' (Markdown text) and 'suggestedNextSteps' (Array of 3 strings).";
-                userPrompt = `Level: ${requestBody.level || "intermediate"}. Goal: ${requestBody.goal || "explain"}. Question: ${requestBody.question}`;
-            } else if (endpoint.includes("/quiz")) {
-                systemPrompt += " Output a JSON structure with 'title', 'difficulty', and 'questions' (Array of objects with 'question', 'options' (array of 4), 'answer' (exact match string), 'explanation').";
-                userPrompt = `Topic: ${requestBody.topic}. Difficulty: ${requestBody.difficulty}. Generate ${requestBody.numberOfQuestions} questions.`;
-            } else if (endpoint.includes("/flashcards")) {
-                systemPrompt += " Output a JSON structure with 'topic', 'level', and 'cards' (Array of objects with 'front', 'back', 'hint').";
-                userPrompt = `Topic: ${requestBody.topic}. Count: ${requestBody.count}. Level: ${requestBody.level}`;
-            }
-
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: "gpt-4o-mini",
-                    messages: [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: userPrompt }
-                    ],
-                    response_format: { type: "json_object" },
-                    temperature: 0.7
-                })
-            });
-
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error?.message || `OpenAI returned status ${response.status}`);
-            }
-
-            const result = await response.json();
-            return JSON.parse(result.choices[0].message.content);
-        }
 
         // OFFLINE STATIC DEMO MODE DATA FALLBACKS
         function generateClientMockData(endpoint, requestBody) {
@@ -3388,20 +3449,19 @@ Rules:
             }
         }
 
-        // HTML & JS ESCAPING HELPERS
-        function escapeHtml(value) {
-            return String(value ?? "")
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
+        function escapeHtml(text) {
+            return String(text ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         function escapeJs(value) {
             return String(value ?? "")
-                .replaceAll("'", "\\'")
-                .replaceAll('"', '\\"');
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '\\"');
         }
 
         // API REFERENCE DATA DEFINITIONS
@@ -3609,46 +3669,151 @@ Always ensure the active profile is set to 'openai' for production integration, 
         };
 
         // SESSION HANDLING LOGIC
-        function checkSession() {
-            const user = localStorage.getItem("spring_ai_current_user");
-            const overlay = document.getElementById("login-overlay");
-            if (user) {
-                currentUser = user;
-                overlay.style.display = "none";
-                overlay.classList.remove("visible");
-                document.getElementById("user-name-display").textContent = user;
-                document.getElementById("user-avatar").textContent = user.substring(0, 1).toUpperCase();
-                document.getElementById("welcome-greeting").textContent = `Welcome back to the Learning Lab, ${user}! 👋`;
-                
-                loadStats();
-                renderCurriculumRoadmaps();
-            } else {
-                currentUser = null;
-                overlay.style.display = "flex";
-                overlay.classList.add("visible");
-            }
+        let isRegisterMode = false;
+        const authToggleLink = document.getElementById("auth-toggle-link");
+        const authToggleMsg = document.getElementById("auth-toggle-msg");
+        const registerNameGroup = document.getElementById("register-name-group");
+        const authSubmitBtn = document.getElementById("auth-submit-btn");
+        const loginOverlaySubtitle = document.querySelector("#login-overlay p");
+
+        if (authToggleLink) {
+            authToggleLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                isRegisterMode = !isRegisterMode;
+                if (isRegisterMode) {
+                    registerNameGroup.style.display = "block";
+                    document.getElementById("login-name").required = true;
+                    authSubmitBtn.textContent = "Create Account";
+                    authToggleMsg.textContent = "Already have an account?";
+                    authToggleLink.textContent = "Sign in";
+                    loginOverlaySubtitle.textContent = "Create a new study account";
+                } else {
+                    registerNameGroup.style.display = "none";
+                    document.getElementById("login-name").required = false;
+                    authSubmitBtn.textContent = "Access Workspace";
+                    authToggleMsg.textContent = "Don't have an account?";
+                    authToggleLink.textContent = "Register here";
+                    loginOverlaySubtitle.textContent = "Sign in to your learning workspace";
+                }
+            });
         }
 
-        document.getElementById("login-form").addEventListener("submit", (e) => {
+        async function checkSession() {
+            const overlay = document.getElementById("login-overlay");
+            
+            // Allow bypass in purely offline static preview demo mode
+            if (currentMode === 'demo') {
+                currentUser = "Guest Developer";
+                overlay.style.display = "none";
+                overlay.classList.remove("visible");
+                document.getElementById("user-name-display").textContent = "Guest";
+                document.getElementById("user-avatar").textContent = "G";
+                document.getElementById("welcome-greeting").textContent = "Welcome to the Learning Lab Static Preview! 👋";
+                loadStats();
+                renderCurriculumRoadmaps();
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/auth/me");
+                if (res.ok) {
+                    const user = await res.json();
+                    currentUser = user.name;
+                    overlay.style.display = "none";
+                    overlay.classList.remove("visible");
+                    document.getElementById("user-name-display").textContent = user.name;
+                    document.getElementById("user-avatar").textContent = user.name.substring(0, 1).toUpperCase();
+                    document.getElementById("welcome-greeting").textContent = `Welcome back to the Learning Lab, ${user.name}! 👋`;
+                } else {
+                    throw new Error("Not authenticated");
+                }
+            } catch (err) {
+                currentUser = "guest";
+                overlay.style.display = "flex";
+                overlay.classList.add("visible");
+                document.getElementById("user-name-display").textContent = "Guest";
+                document.getElementById("user-avatar").textContent = "G";
+                document.getElementById("welcome-greeting").textContent = "Welcome to the Learning Lab! 👋";
+            }
+            loadStats();
+            renderCurriculumRoadmaps();
+        }
+
+        document.getElementById("login-form").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const usernameInput = document.getElementById("login-username");
-            const username = usernameInput.value.trim();
-            if (username) {
-                localStorage.setItem("spring_ai_current_user", username);
-                usernameInput.value = "";
-                checkSession();
+            const email = document.getElementById("login-email").value.trim();
+            const password = document.getElementById("login-password").value.trim();
+            const name = isRegisterMode ? document.getElementById("login-name").value.trim() : "";
+
+            loadingMessage.textContent = isRegisterMode ? "Registering account..." : "Authenticating...";
+            loadingOverlay.classList.add("visible");
+
+            try {
+                if (isRegisterMode) {
+                    const res = await fetch("/api/auth/register", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, password, name })
+                    });
+                    if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.message || "Registration failed");
+                    }
+                    showToast("Account registered! Please sign in.", "success");
+                    isRegisterMode = false;
+                    registerNameGroup.style.display = "none";
+                    document.getElementById("login-name").required = false;
+                    authSubmitBtn.textContent = "Access Workspace";
+                    authToggleMsg.textContent = "Don't have an account?";
+                    authToggleLink.textContent = "Register here";
+                    loginOverlaySubtitle.textContent = "Sign in to your learning workspace";
+                } else {
+                    const res = await fetch("/api/auth/login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, password })
+                    });
+                    if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.message || "Invalid email or password");
+                    }
+                    const user = await res.json();
+                    safeStorage.setItem("spring_ai_current_user", user.name);
+                    safeStorage.setItem("spring_ai_current_email", user.email);
+                    document.getElementById("login-email").value = "";
+                    document.getElementById("login-password").value = "";
+                    showToast("Access Granted!", "success");
+                    await checkSession();
+                }
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, "error");
+            } finally {
+                loadingOverlay.classList.remove("visible");
             }
         });
 
-        window.logoutUser = function() {
-            localStorage.removeItem("spring_ai_current_user");
-            checkSession();
+        window.logoutUser = async function() {
+            try {
+                await fetch("/api/auth/logout", { method: "POST" });
+            } catch (e) {
+                console.error("Logout request failed", e);
+            }
+            safeStorage.removeItem("spring_ai_current_user");
+            safeStorage.removeItem("spring_ai_current_email");
+            await checkSession();
         };
 
         // INITIALIZE APP
-        updateProviderVisibility(providerModeSelect.value);
         detectProviderMode();
-        checkSession();
+
+        // Pre-populate Sandbox inspector on initial load with a default ChatClient example
+        updateSandbox(
+            'explain', 
+            '/api/study/explain', 
+            { question: "What is ChatClient?", level: "beginner", goal: "Understand chat client basics" },
+            { provider: "mock", answer: "ChatClient is the primary fluent interface used to send requests to Spring AI..." }
+        );
     </script>
 </body>
 </html>
