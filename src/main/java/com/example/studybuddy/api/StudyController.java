@@ -1,17 +1,41 @@
 package com.example.studybuddy.api;
 
 import com.example.studybuddy.ai.StudyAiClient;
+import com.example.studybuddy.dto.QuizResultRequest;
+import com.example.studybuddy.dto.QuizResultResponse;
+import com.example.studybuddy.dto.StudyProgressRequest;
+import com.example.studybuddy.dto.StudyProgressResponse;
+import com.example.studybuddy.model.FlashcardDeck;
+import com.example.studybuddy.model.QuizResult;
+import com.example.studybuddy.model.StudyProgress;
+import com.example.studybuddy.model.User;
+import com.example.studybuddy.repository.FlashcardDeckRepository;
+import com.example.studybuddy.repository.QuizResultRepository;
+import com.example.studybuddy.repository.StudyProgressRepository;
+import com.example.studybuddy.repository.UserRepository;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/study")
@@ -19,10 +43,36 @@ public class StudyController {
 
     private final StudyAiClient studyAiClient;
     private final Environment environment;
+    private final UserRepository userRepository;
+    private final StudyProgressRepository studyProgressRepository;
+    private final QuizResultRepository quizResultRepository;
+    private final FlashcardDeckRepository flashcardDeckRepository;
+    private final ObjectMapper objectMapper;
 
-    public StudyController(StudyAiClient studyAiClient, Environment environment) {
+    public StudyController(StudyAiClient studyAiClient,
+                           Environment environment,
+                           UserRepository userRepository,
+                           StudyProgressRepository studyProgressRepository,
+                           QuizResultRepository quizResultRepository,
+                           FlashcardDeckRepository flashcardDeckRepository,
+                           ObjectMapper objectMapper) {
         this.studyAiClient = studyAiClient;
         this.environment = environment;
+        this.userRepository = userRepository;
+        this.studyProgressRepository = studyProgressRepository;
+        this.quizResultRepository = quizResultRepository;
+        this.flashcardDeckRepository = flashcardDeckRepository;
+        this.objectMapper = objectMapper;
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        }
+        String email = authentication.getName();
+        return userRepository.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
     }
 
     @GetMapping("/status")
@@ -163,7 +213,137 @@ public class StudyController {
 
     @PostMapping("/flashcards")
     public FlashcardDeckResponse flashcards(@Valid @RequestBody FlashcardRequest request) {
-        return this.studyAiClient.flashcards(request);
+        FlashcardDeckResponse response = this.studyAiClient.flashcards(request);
+        try {
+            User user = getCurrentUser();
+            String cardsJson = objectMapper.writeValueAsString(response.cards());
+            Optional<FlashcardDeck> existingDeck = flashcardDeckRepository.findByUserAndTopicIgnoreCase(user, request.topic());
+            
+            FlashcardDeck deck;
+            if (existingDeck.isPresent()) {
+                deck = existingDeck.get();
+                deck.setLevel(request.level());
+                deck.setCardsJson(cardsJson);
+                deck.setCreatedAt(LocalDateTime.now());
+            } else {
+                deck = new FlashcardDeck(
+                        UUID.randomUUID().toString(),
+                        user,
+                        request.topic(),
+                        request.level(),
+                        cardsJson,
+                        LocalDateTime.now()
+                );
+            }
+            flashcardDeckRepository.save(deck);
+        } catch (Exception e) {
+            // Log issue but do not block response
+            System.err.println("Could not auto-save flashcard deck: " + e.getMessage());
+        }
+        return response;
+    }
+
+    @GetMapping("/flashcard-deck")
+    public FlashcardDeckResponse getSavedFlashcardDeck(@RequestParam String topic) {
+        User user = getCurrentUser();
+        FlashcardDeck deck = flashcardDeckRepository.findByUserAndTopicIgnoreCase(user, topic)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No saved deck found for topic: " + topic));
+        try {
+            List<Flashcard> cards = objectMapper.readValue(deck.getCardsJson(), new TypeReference<List<Flashcard>>() {});
+            return new FlashcardDeckResponse("database", deck.getTopic(), deck.getLevel(), cards);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to parse saved cards: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/progress")
+    public StudyProgressResponse getProgress() {
+        User user = getCurrentUser();
+        Optional<StudyProgress> progressOpt = studyProgressRepository.findByUser(user);
+        if (progressOpt.isEmpty()) {
+            return new StudyProgressResponse(0, 0, 0, Collections.emptyMap());
+        }
+        StudyProgress progress = progressOpt.get();
+        try {
+            Map<String, Object> moduleProgress = objectMapper.readValue(progress.getModuleProgressJson(), new TypeReference<Map<String, Object>>() {});
+            return new StudyProgressResponse(
+                    progress.getExplains(),
+                    progress.getQuizzes(),
+                    progress.getFlashcards(),
+                    moduleProgress
+            );
+        } catch (Exception e) {
+            return new StudyProgressResponse(progress.getExplains(), progress.getQuizzes(), progress.getFlashcards(), Collections.emptyMap());
+        }
+    }
+
+    @PostMapping("/progress")
+    public StudyProgressResponse updateProgress(@Valid @RequestBody StudyProgressRequest request) {
+        User user = getCurrentUser();
+        Optional<StudyProgress> existingProgress = studyProgressRepository.findByUser(user);
+        
+        String progressJson;
+        try {
+            progressJson = objectMapper.writeValueAsString(request.moduleProgress());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid module progress data");
+        }
+
+        StudyProgress progress;
+        if (existingProgress.isPresent()) {
+            progress = existingProgress.get();
+            progress.setExplains(request.explains());
+            progress.setQuizzes(request.quizzes());
+            progress.setFlashcards(request.flashcards());
+            progress.setModuleProgressJson(progressJson);
+        } else {
+            progress = new StudyProgress(
+                    UUID.randomUUID().toString(),
+                    user,
+                    request.explains(),
+                    request.quizzes(),
+                    request.flashcards(),
+                    progressJson
+            );
+        }
+
+        studyProgressRepository.save(progress);
+        return new StudyProgressResponse(
+                progress.getExplains(),
+                progress.getQuizzes(),
+                progress.getFlashcards(),
+                request.moduleProgress()
+        );
+    }
+
+    @PostMapping("/quiz-result")
+    public QuizResultResponse saveQuizResult(@Valid @RequestBody QuizResultRequest request) {
+        User user = getCurrentUser();
+        QuizResult result = new QuizResult(
+                UUID.randomUUID().toString(),
+                user,
+                request.topic(),
+                request.score(),
+                request.totalQuestions(),
+                LocalDateTime.now()
+        );
+        quizResultRepository.save(result);
+        return new QuizResultResponse(
+                result.getId(),
+                result.getTopic(),
+                result.getScore(),
+                result.getTotalQuestions(),
+                result.getCompletedAt()
+        );
+    }
+
+    @GetMapping("/quiz-results")
+    public List<QuizResultResponse> getQuizResults() {
+        User user = getCurrentUser();
+        return quizResultRepository.findByUserOrderByCompletedAtDesc(user)
+                .stream()
+                .map(r -> new QuizResultResponse(r.getId(), r.getTopic(), r.getScore(), r.getTotalQuestions(), r.getCompletedAt()))
+                .collect(Collectors.toList());
     }
 
     private List<String> profiles() {

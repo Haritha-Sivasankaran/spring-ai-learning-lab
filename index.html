@@ -1835,6 +1835,15 @@
                                     </button>
                                 </form>
                             </div>
+                            <div class="card" id="quiz-history-card" style="margin-top: 20px; display: none;">
+                                <div class="card-header" style="margin-bottom: 12px;">
+                                    <h2>Quiz History</h2>
+                                    <p>Your recent evaluation attempts.</p>
+                                </div>
+                                <div id="quiz-history-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                                    <p style="color:var(--muted); font-size:14px;">No quiz records found.</p>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Quiz Body -->
@@ -1923,10 +1932,16 @@
                                             <input name="count" type="number" value="5" min="1" max="12">
                                         </div>
                                     </div>
-                                    <button class="btn btn-primary" type="submit">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
-                                        Build Deck
-                                    </button>
+                                    <div class="form-actions" style="display: flex; gap: 10px; flex-direction: column; width: 100%;">
+                                        <button class="btn btn-primary" type="submit" style="width: 100%;">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+                                            Build Deck
+                                        </button>
+                                        <button class="btn btn-secondary" id="load-saved-deck-btn" type="button" style="display: none; width: 100%; justify-content: center;" onclick="loadSavedDeck()">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                            Load Saved Deck
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
@@ -2606,10 +2621,9 @@ Rules:
         };
 
         // Load statistics
-        function loadStats() {
+        async function loadStats() {
             if (!currentUser) return;
-            const statsKey = `spring_ai_study_stats_${currentUser}`;
-            const saved = safeStorage.getItem(statsKey);
+            
             appStats = {
                 explains: 0,
                 quizzes: 0,
@@ -2622,28 +2636,157 @@ Rules:
                     "module-5": { explain: false, quiz: false, flashcards: false }
                 }
             };
-            if (saved) {
+
+            if (currentMode === 'server') {
                 try {
-                    const parsed = JSON.parse(saved);
-                    appStats = { ...appStats, ...parsed };
+                    const res = await fetch("/api/study/progress", {
+                        headers: getAuthHeaders()
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data) {
+                            appStats.explains = data.explains || 0;
+                            appStats.quizzes = data.quizzes || 0;
+                            appStats.flashcards = data.flashcards || 0;
+                            if (data.moduleProgress) {
+                                appStats.moduleProgress = { ...appStats.moduleProgress, ...data.moduleProgress };
+                            }
+                        }
+                    }
                 } catch (e) {
-                    console.error("Failed parsing stats, reset to default", e);
+                    console.error("Failed loading stats from server", e);
+                }
+            } else {
+                const statsKey = `spring_ai_study_stats_${currentUser}`;
+                const saved = safeStorage.getItem(statsKey);
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        appStats = { ...appStats, ...parsed };
+                    } catch (e) {
+                        console.error("Failed parsing stats, reset to default", e);
+                    }
                 }
             }
             updateStatsUI();
         }
 
-        function saveStats() {
+        async function saveStats() {
             if (!currentUser) return;
-            const statsKey = `spring_ai_study_stats_${currentUser}`;
-            safeStorage.setItem(statsKey, JSON.stringify(appStats));
             updateStatsUI();
+            
+            if (currentMode === 'server') {
+                try {
+                    await fetch("/api/study/progress", {
+                        method: "POST",
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(appStats)
+                    });
+                } catch (e) {
+                    console.error("Failed saving stats to server", e);
+                }
+            } else {
+                const statsKey = `spring_ai_study_stats_${currentUser}`;
+                safeStorage.setItem(statsKey, JSON.stringify(appStats));
+            }
         }
 
         function updateStatsUI() {
             document.getElementById("stat-tutor-sessions").textContent = appStats.explains;
             document.getElementById("stat-quizzes-taken").textContent = appStats.quizzes;
             document.getElementById("stat-cards-studied").textContent = appStats.flashcards;
+        }
+
+        async function updateSavedDeckButtonVisibility() {
+            const topicInput = document.querySelector("#flashcards-form input[name='topic']");
+            const loadBtn = document.getElementById("load-saved-deck-btn");
+            if (!topicInput || !loadBtn) return;
+            const topic = topicInput.value.trim();
+            if (!topic || currentMode !== 'server') {
+                loadBtn.style.display = "none";
+                return;
+            }
+            try {
+                const res = await fetch(`/api/study/flashcard-deck?topic=${encodeURIComponent(topic)}`, {
+                    headers: getAuthHeaders()
+                });
+                if (res.ok) {
+                    loadBtn.style.display = "flex";
+                } else {
+                    loadBtn.style.display = "none";
+                }
+            } catch (e) {
+                loadBtn.style.display = "none";
+            }
+        }
+
+        window.loadSavedDeck = async function() {
+            const topic = document.querySelector("#flashcards-form input[name='topic']").value.trim();
+            if (!topic) return;
+            loadingMessage.textContent = "Loading saved deck from database...";
+            loadingOverlay.classList.add("visible");
+            try {
+                const res = await fetch(`/api/study/flashcard-deck?topic=${encodeURIComponent(topic)}`, {
+                    headers: getAuthHeaders()
+                });
+                if (res.ok) {
+                    const savedDeck = await res.json();
+                    renderFlashcardsResponse(savedDeck);
+                    showToast("Loaded saved flashcard deck!", "success");
+                } else {
+                    showToast("No saved deck found.", "error");
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("Failed to load saved deck.", "error");
+            } finally {
+                loadingOverlay.classList.remove("visible");
+            }
+        };
+
+        async function loadQuizHistory() {
+            const historyCard = document.getElementById("quiz-history-card");
+            const historyList = document.getElementById("quiz-history-list");
+            if (!historyCard || !historyList) return;
+
+            if (currentMode !== 'server' || !currentUser) {
+                historyCard.style.display = "none";
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/study/quiz-results", {
+                    headers: getAuthHeaders()
+                });
+                if (res.ok) {
+                    const results = await res.json();
+                    if (results && results.length > 0) {
+                        historyCard.style.display = "block";
+                        historyList.innerHTML = results.map(r => {
+                            const date = new Date(r.completedAt).toLocaleString();
+                            const pct = Math.round((r.score / r.totalQuestions) * 100);
+                            return `
+                                <div class="history-item" style="padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px; color: var(--text);">${r.topic}</div>
+                                        <div style="font-size: 10px; color: var(--muted); margin-top: 2px;">${date}</div>
+                                    </div>
+                                    <div style="font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: ${pct >= 70 ? 'var(--accent)' : '#ff6b6b'}">
+                                        ${r.score}/${r.totalQuestions} (${pct}%)
+                                    </div>
+                                </div>
+                            `;
+                        }).join("");
+                    } else {
+                        historyCard.style.display = "none";
+                    }
+                } else {
+                    historyCard.style.display = "none";
+                }
+            } catch (e) {
+                console.error("Failed loading quiz history", e);
+                historyCard.style.display = "none";
+            }
         }
 
         // Initialize credentials
@@ -2999,7 +3142,7 @@ Rules:
             document.getElementById("quiz-form").dispatchEvent(new Event('submit'));
         };
 
-        window.triggerFlashcardAction = function(moduleId) {
+        window.triggerFlashcardAction = async function(moduleId) {
             const mod = CURRICULUM.find(m => m.id === moduleId);
             if (!mod) return;
             switchTab('flashcards');
@@ -3010,8 +3153,26 @@ Rules:
             // Mark source mapping
             currentActiveModuleSource = moduleId;
 
+            if (currentMode === 'server') {
+                try {
+                    const res = await fetch(`/api/study/flashcard-deck?topic=${encodeURIComponent(mod.topic)}`, {
+                        headers: getAuthHeaders()
+                    });
+                    if (res.ok) {
+                        const savedDeck = await res.json();
+                        renderFlashcardsResponse(savedDeck);
+                        showToast("Loaded saved flashcard deck from database!", "success");
+                        updateSavedDeckButtonVisibility();
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Error looking up saved deck", e);
+                }
+            }
+
             // Submit
             document.getElementById("flashcards-form").dispatchEvent(new Event('submit'));
+            updateSavedDeckButtonVisibility();
         };
 
         window.quickLearnModule = function(moduleId) {
@@ -3290,6 +3451,18 @@ Rules:
                 }
             }
             saveStats();
+
+            if (currentMode === 'server') {
+                fetch("/api/study/quiz-result", {
+                    method: "POST",
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        topic: currentActiveModuleSource || document.querySelector("#quiz-form input[name='topic']").value || "General",
+                        score: quizScore,
+                        totalQuestions: total
+                    })
+                }).then(() => loadQuizHistory()).catch(e => console.error("Failed saving quiz result", e));
+            }
         }
 
         window.restartQuiz = function() {
@@ -3748,7 +3921,9 @@ Always ensure the active profile is set to 'openai' for production integration, 
                 document.getElementById("user-avatar").textContent = "G";
                 document.getElementById("welcome-greeting").textContent = "Welcome to the Learning Lab! 👋";
             }
-            loadStats();
+            await loadStats();
+            await loadQuizHistory();
+            await updateSavedDeckButtonVisibility();
             renderCurriculumRoadmaps();
         }
 
@@ -3824,6 +3999,11 @@ Always ensure the active profile is set to 'openai' for production integration, 
 
         // INITIALIZE APP
         detectProviderMode();
+
+        const flashcardTopicInput = document.querySelector("#flashcards-form input[name='topic']");
+        if (flashcardTopicInput) {
+            flashcardTopicInput.addEventListener("input", updateSavedDeckButtonVisibility);
+        }
 
         // Pre-populate Sandbox inspector on initial load with a default ChatClient example
         updateSandbox(
